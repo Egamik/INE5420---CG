@@ -1,7 +1,7 @@
 from enum import Enum
-from PyQt5.QtGui import QPainter
+from typing import List, Tuple
 
-import abc
+# import abc
 
 class GraphicObjectType(Enum):
   Point = 1
@@ -18,7 +18,7 @@ class GraphicObjectType(Enum):
     else:
       raise "No definition for type "+self
 
-class GraphicObject:
+class GraphicObject():
   def __init__(self, name: str, type: GraphicObjectType) -> None:
     self.name = name
     self.type = type
@@ -26,15 +26,17 @@ class GraphicObject:
   def getPositions(self):
     return self.points
 
-  @abc.abstractmethod
-  def draw(self, painter: QPainter, viewport, window):
-    pass
-
-
 class Point(GraphicObject):
   def __init__(self, name: str, x: float, y: float) -> None:
     super().__init__(name, GraphicObjectType.Point)
     self.points = [(x, y)]
 
-  def draw(self, painter: QPainter, viewport, window):
-    if (self.points == None): return
+class Line(GraphicObject):
+  def __init__(self, name: str, x1: float, y1: float, x2: float, y2: float) -> None:
+    super().__init__(name, GraphicObjectType.Line)
+    self.points = [(x1, y1), (x2, y2)]
+
+class Polygon(GraphicObject):
+  def __init__(self, name: str, points :List[tuple]) -> None:
+    super().__init__(name, GraphicObjectType.Polygon)
+    self.points = points

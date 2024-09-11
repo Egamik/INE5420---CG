@@ -1,27 +1,10 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QPushButton, QListWidget, QGraphicsView, QGraphicsScene, QLabel, QAction, QComboBox, QFormLayout, QDialogButtonBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QGraphicsItem, QListWidget, QGraphicsView, QGraphicsScene, QLabel, QAction
+from PyQt5.QtGui import QPainter, QPen, QBrush, QPolygonF
+from PyQt5.QtCore import Qt, QPointF
 from widgets import ControlWidget
-
-# class AddObjectDialog(QDialog):
-#     def __init__(self, parent=None):
-#         super().__init__(parent)
-#         self.setWindowTitle("Add new object")
-#         self.setGeometry(100, 100, 300, 200)
-
-#         layout = QFormLayout(self)
-#         self.object_type = QComboBox(self)
-#         self.object_type.addItems(["Point", "Line", "Polygon"])
-#         layout.addRow("Object Type:", self.object_type)
-
-#         # Dialog buttons
-#         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-#         self.button_box.accepted.connect(self.accept)
-#         self.button_box.rejected.connect(self.reject)
-
-#         layout.addWidget(self.button_box)
-
-#     def get_selected_object_type(self):
-#         return self.object_type.currentText()
+from dialogs import AddObjectDialog
+from graphic_obj import Point, Line, Polygon
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -30,6 +13,8 @@ class MainWindow(QMainWindow):
         # Window settings
         self.setWindowTitle("Trabalho 1 CG")
         self.setGeometry(100, 100, 1000, 700)
+        # Attributes
+        self.poli_count = 0
 
         # Create Menu bar
         self.createMenuBar()
@@ -45,14 +30,14 @@ class MainWindow(QMainWindow):
         self.object_list = QListWidget(self)
         left_layout.addWidget(self.object_list)
 
-        # # Control Panel
+        # Control Panel
         controls = ControlWidget(self.onPanUp, self.onPanDown, self.onPanLeft, self.onPanRight, self.onZoomIn, self.onZoomOut)
         control_layout = controls.getLayout()
 
         left_layout.addLayout(control_layout)
 
         # Add Left Layout to Main Layout
-        main_layout.addLayout(left_layout)
+        main_layout.addLayout(left_layout, 1)
 
         right_layout = QGridLayout()
         right_layout.addWidget(QLabel("Viewport"))
@@ -63,7 +48,7 @@ class MainWindow(QMainWindow):
         self.graphics_view.setScene(self.scene)
         right_layout.addWidget(self.graphics_view)
 
-        main_layout.addLayout(right_layout)
+        main_layout.addLayout(right_layout, 2)
 
         # Central Widget setup
         central_widget = QWidget()
@@ -87,30 +72,51 @@ class MainWindow(QMainWindow):
     def add2DObject(self):
         dialog = AddObjectDialog(self)
         if dialog.exec_() == QDialog.Accepted:  # Corrected dialog response comparison
-            object_type = dialog.get_selected_object_type()
-            print(f'Add {object_type}!')
+            point_count = dialog.getSelectedObjectType()
+            points = dialog.getPointData()
+            if point_count == 1:
+                # Store item on list
+                item = Point("P", points[0][0], points[0][1])
+                self.scene.addEllipse(points[0][0] - 2.5, points[0][1] - 2.5, 5, 5, QPen(Qt.black), QBrush(Qt.black))
+            elif point_count == 2:
+                # Draw Line
+                item = Line("L", points[0][0], points[0][1], points[1][0], points[1][1])
+                self.scene.addLine(item.points[0][0], item.points[0][1], item.points[1][0], item.points[1][1], QPen(Qt.black, 2))
+            else:
+                # Draw Polygon
+                item = Polygon("Pol", points)
+                polygon = QPolygonF([QPointF(p[0], p[1]) for p in item.points])
+                self.scene.addPolygon(polygon, QPen(Qt.black, 2), QBrush(Qt.NoBrush))
+            print(f'Add {point_count}!')
 
-    def drawObject(self, data):
-        print('Draw Object')
-        self.scene.addPolygon()
+    # def drawObject(self, item: QGraphicsItem):
+    #     print('Draw Object')
+    #     if isinstance(item, Point):
+    #         self.scene.addEllipse(item.points[0][0] - 2.5, item.points[0][1] - 2.5, 5, 5, QPen(Qt.black), QBrush(Qt.black))
 
     def onZoomIn(self):
         print('Zoom in')
+        self.graphics_view.scale(1.2, 1.2)
 
     def onZoomOut(self):
         print('Zoom out')
+        self.graphics_view.scale(0.8, 0.8)
 
     def onPanUp(self):
         print('Pan up')
+        self.graphics_view.translate(0, -50)
     
     def onPanDown(self):
         print('Pan down')
+        self.graphics_view.translate(0, 50)
 
     def onPanLeft(self):
         print('Pan left')
+        self.graphics_view.translate(-50, 0)
 
     def onPanRight(self):
         print('Pan right')
+        self.graphics_view.translate(50, 0)
 
 # Main Application
 if __name__ == "__main__":
