@@ -1,11 +1,8 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QWidget, QVBoxLayout, QHBoxLayout, QSizePolicy, QGraphicsItem, QListWidget, QGraphicsView, QGraphicsScene, QLabel, QAction
-from PyQt5.QtGui import QPainter, QPen, QBrush, QPolygonF
-from PyQt5.QtCore import Qt, QPointF
+from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGraphicsItem, QListWidget, QGraphicsView, QGraphicsScene, QLabel, QAction
 from GUI.widgets import ControlWidget
 from GUI.dialogs import AddObjectDialog
 from GUI.viewport import Viewport, ViewportLayout
-from graphic_obj import Point, Line, Polygon
 from utils.formatObject import formatObject
 
 class MainWindow(QMainWindow):
@@ -20,8 +17,8 @@ class MainWindow(QMainWindow):
         self.poli_count = 0
         self.view_center = [0, 0]
         self.poli_list = []
-        self.pan_scale = 100
-        self.zoom_scale = 1.2
+        self.pan_scale = 50
+        self.zoom_scale = 0.2
 
         # Create Menu bar
         self.createMenuBar()
@@ -37,11 +34,21 @@ class MainWindow(QMainWindow):
         self.object_list = QListWidget(self)
         left_layout.addWidget(self.object_list)
 
+        # Add/Remove objects buttons
+        buttonLayout = QHBoxLayout()
+        self.addButton = QPushButton("Add Object")
+        self.removeButton = QPushButton("Remove Object")
+        self.addButton.clicked.connect(self.addObject)
+
+        buttonLayout.addWidget(self.removeButton)
+        buttonLayout.addWidget(self.addButton)
+        left_layout.addLayout(buttonLayout)
+        
         # Setup viewport
         posMultiplier = 0.2/2
         self.viewport = Viewport(posMultiplier*720, posMultiplier*900, 720, 900)
         self.viewport_layout = ViewportLayout(self, self.viewport, None, 720, 900)
-        # self.viewport_layout.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
         # Control Panel
         controls = ControlWidget(self.on_up, self.on_down, self.on_left, self.on_right, self.zoom_in, self.zoom_out)
         control_layout = controls.getLayout()
@@ -67,19 +74,17 @@ class MainWindow(QMainWindow):
         menu_bar = self.menuBar()
 
         file_menu = menu_bar.addMenu("Menu")
-        insert_menu = menu_bar.addMenu("Insert")
+        # insert_menu = menu_bar.addMenu("Insert")
 
         save_action = QAction("Save", self)
         open_action = QAction("Open", self)
         exit_action = QAction("Exit", self)
-        add_action = QAction("Add Object", self)
-        add_action.triggered.connect(self.addObject)
         exit_action.triggered.connect(self.close)
 
         file_menu.addAction(save_action)
         file_menu.addAction(open_action)
+        file_menu.addSeparator()
         file_menu.addAction(exit_action)
-        insert_menu.addAction(add_action)
 
     def addObject(self):
         dialog = AddObjectDialog(self)
@@ -94,12 +99,12 @@ class MainWindow(QMainWindow):
 
     def on_up(self):
         print('Up')
-        self.viewport.addToPoints(0, self.pan_scale)
+        self.viewport.addToPoints(0, -self.pan_scale)
         self.viewport_layout.drawObjects()
     
     def on_down(self):
         print('Down')
-        self.viewport.addToPoints(0, -self.pan_scale)
+        self.viewport.addToPoints(0, self.pan_scale)
         self.viewport_layout.drawObjects()
 
     def on_left(self):
@@ -113,13 +118,52 @@ class MainWindow(QMainWindow):
         self.viewport_layout.drawObjects()
 
     def zoom_in(self):
-        print('Zoom in')
-        self.viewport.multPoints(self.zoom_scale, self.zoom_scale)
+        # Calculate center and scale factor
+        center_x = self.viewport_layout.width() / 2
+        center_y = self.viewport_layout.width() / 2
+        scale_factor = 1 + self.zoom_scale
+
+        for obj in self.viewport_layout.viewport.getObjectList():
+            updated_points = []
+            for point in obj.getPoints():
+                # Calculate the offset of the point from the center of the viewport
+                offset_x = point[0] - center_x
+                offset_y = point[1] - center_y
+
+                # Apply the scaling factor to the offset
+                new_x = center_x + offset_x * scale_factor
+                new_y = center_y + offset_y * scale_factor
+
+                updated_points.append((round(new_x), round(new_y)))
+            print('Zoom in original points: ', obj.getPoints())
+            print('Zoom in new points: ', updated_points)
+            # Update the object's points
+            obj.setPoints(updated_points)
+        
         self.viewport_layout.drawObjects()
 
     def zoom_out(self):
-        print('Zoom out')
-        self.viewport.multPoints(self.zoom_scale, self.zoom_scale)
+        center_x = self.viewport_layout.width() / 2
+        center_y = self.viewport_layout.width() / 2
+        scale_factor = 1 - self.zoom_scale
+
+        for obj in self.viewport_layout.viewport.getObjectList():
+            updated_points = []
+            for point in obj.getPoints():
+                # Calculate the offset of the point from the center of the viewport
+                offset_x = point[0] - center_x
+                offset_y = point[1] - center_y
+
+                # Apply the scaling factor to the offset
+                new_x = center_x + offset_x * scale_factor
+                new_y = center_y + offset_y * scale_factor
+
+                updated_points.append((round(new_x), round(new_y)))
+            print('Zoom out original points: ', obj.getPoints())
+            print('Zoom out new points: ', updated_points)
+            # Update the object's points
+            obj.setPoints(updated_points)
+        
         self.viewport_layout.drawObjects()
 
 # Main Application

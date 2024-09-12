@@ -21,12 +21,18 @@ class Viewport:
         self.objList.remove(obj)
         print('Remove object from scene: ', obj.name, obj.getPoints())
 
+    def getObjectList(self):
+        return self.objList
+    
+    def setObjectList(self, objects: List[GraphicObject]):
+        self.objList = objects
+
     def addToPoints(self, x: int, y: int):
         for obj in self.objList:
             updated_pts = []
             for point in obj.getPoints():
                 point_l = list(point)
-                point_l[0] = point_l[1] + x
+                point_l[0] = point_l[0] + x
                 point_l[1] = point_l[1] + y
                 point = tuple(point_l)
                 updated_pts.append(point)
@@ -81,7 +87,7 @@ class ViewportLayout(QLabel):
                 for point in points[1:]:
                     painter.drawLine(last_point[0], last_point[1], point[0], point[1])
                     last_point = point
-        # painter.drawRect(self.viewport.x, self.viewport.y, self.viewport.height, self.viewport.width)
+                painter.drawLine(last_point[0], last_point[1], points[0][0], points[0][1])
         painter.end()
         self.update()  # Request a repaint to show the changes
 

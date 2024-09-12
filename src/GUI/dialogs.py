@@ -29,6 +29,7 @@ class AddObjectDialog(QDialog):
 
         # Store input fields for the coordinates
         self.point_inputs = []
+        self.update_point_inputs()
 
     def update_point_inputs(self):
         # Clear current input fields
