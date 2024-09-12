@@ -56,8 +56,8 @@ class AddObjectDialog(QDialog):
         points = []
         for x_input, y_input in self.point_inputs:
             try:
-                x = float(x_input.text())
-                y = float(y_input.text())
+                x = int(x_input.text())
+                y = int(y_input.text())
                 points.append((x, y))
             except ValueError:
                 # Handle cases where the input is not a valid number

@@ -1,14 +1,13 @@
 from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout, QComboBox
+from GUI.viewport import Viewport, ViewportLayout
 
 class ControlWidget(QWidget):
     def __init__(self, on_up, on_down, on_left, on_right, zoom_in, zoom_out):
         super().__init__(None)
 
         self.control_layout = QGridLayout()
-        # Viewport/Object toggle
-        # self.view_object_toggle = QComboBox(self)
-        # self.view_object_toggle.addItems(["Viewport", "Objects"])
-        # self.control_layout.addWidget(self.view_object_toggle, 0, 0, 1, 3)
+        # self.zoom_scale = 0.5
+        # self.pan_scale = 100
 
         # Control buttons
         self.zoomin_button = QPushButton("+🔍")
@@ -34,3 +33,4 @@ class ControlWidget(QWidget):
     
     def getLayout(self):
         return self.control_layout
+
