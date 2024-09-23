@@ -45,9 +45,9 @@ class MainWindow(QMainWindow):
         left_layout.addLayout(buttonLayout)
         
         # Setup viewport
-        posMultiplier = 0.2/2
-        self.viewport = Viewport(posMultiplier*720, posMultiplier*900, 720, 900)
-        self.viewport_layout = ViewportLayout(self, self.viewport, None, 720, 900)
+        # posMultiplier = 0.2/2
+        #self.viewport = Viewport(posMultiplier*720, posMultiplier*900, 720, 900)
+        self.viewport_layout = ViewportLayout(self, None, 720, 920)
 
         # Control Panel
         controls = ControlWidget(self.on_up, self.on_down, self.on_left, self.on_right, self.zoom_in, self.zoom_out)
@@ -91,7 +91,7 @@ class MainWindow(QMainWindow):
         if dialog.exec_() == QDialog.Accepted:
             print('Add object')
             obj = formatObject(dialog.getPointData(), self.poli_count)
-            self.viewport.addObject(obj)
+            self.viewport_layout.addObject(obj)
             self.viewport_layout.drawObjects()
 
     def drawViewport(self):
@@ -99,22 +99,22 @@ class MainWindow(QMainWindow):
 
     def on_up(self):
         print('Up')
-        self.viewport.addToPoints(0, -self.pan_scale)
+        self.viewport_layout.addToPoints(0, -self.pan_scale)
         self.viewport_layout.drawObjects()
     
     def on_down(self):
         print('Down')
-        self.viewport.addToPoints(0, self.pan_scale)
+        self.viewport_layout.addToPoints(0, self.pan_scale)
         self.viewport_layout.drawObjects()
 
     def on_left(self):
         print('left')
-        self.viewport.addToPoints(-self.pan_scale, 0)
+        self.viewport_layout.addToPoints(-self.pan_scale, 0)
         self.viewport_layout.drawObjects()
 
     def on_right(self):
         print('right')
-        self.viewport.addToPoints(self.pan_scale, 0)
+        self.viewport_layout.addToPoints(self.pan_scale, 0)
         self.viewport_layout.drawObjects()
 
     def zoom_in(self):
