@@ -15,7 +15,6 @@ class MainWindow(QMainWindow):
 
         # Attributes
         self.poli_count = 0
-        self.view_center = [0, 0]
         self.poli_list = []
         self.pan_scale = 50
         self.zoom_scale = 0.2

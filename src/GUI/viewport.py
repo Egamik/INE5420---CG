@@ -70,12 +70,12 @@ class ViewportLayout(QLabel):
     def __init__(self, parent, window, width, height):
         super().__init__(parent=parent)
         self.window = window
-
-        self.padding_x = 60
-        self. padding_y = 80
-        view_x = width - (2 * self.padding_x)
-        view_y = height - (2 * self.padding_y)
-        self.viewport = Viewport(int(view_x / 2), int(view_y / 2), view_x, view_y)
+        # Padding
+        self.x_min = 60
+        self.y_min = 80
+        self.view_w = width - (2 * self.x_min)
+        self.view_h = height - (2 * self.y_min)
+        self.viewport = Viewport(int(self.view_w / 2), int(self.view_h / 2), self.view_w, self.view_h)
         
         self.resize(int(width), int(height))
         self.image = QImage(int(width), int(height), QImage.Format_ARGB32)
@@ -85,6 +85,26 @@ class ViewportLayout(QLabel):
         self.drawBoundingRect(painter)
         painter.end()
         self.update()
+
+    def addObject(self, object: GraphicObject):
+        self.viewport.addObject(object)
+
+    def removeObject(self, object: GraphicObject):
+        self.viewport.removeObject(object)
+
+    def addToPoints(self, x: int, y: int):
+        self.viewport.addToPoints(x, y)
+
+    # Returns boundary points clockwise
+    def getBoundaries(self):
+        
+        bounds: List[Tuple] = []
+        top_l    =  (self.x_min, self.y_min)
+        bottom_r =  (self.x_min + self.view_w, self.y_min + self.view_h)
+        
+        bounds.append(top_l)
+        bounds.append(bottom_r)
+        return bounds
 
     def clearCanva(self):
         # Clear the canvas by filling white
@@ -97,20 +117,11 @@ class ViewportLayout(QLabel):
         painter.end()
         self.update()  # Repaint
 
-    def addObject(self, object: GraphicObject):
-        self.viewport.addObject(object)
-
-    def removeObject(self, object: GraphicObject):
-        self.viewport.removeObject(object)
-
-    def addToPoints(self, x: int, y: int):
-        self.viewport.addToPoints(x, y)
-        
     def drawBoundingRect(self, painter: QPainter):
-        rect_x = self.image.width() - self.padding_x
-        rect_y = self.image.height() - self.padding_y
+        rect_x = self.image.width() - self.x_min
+        rect_y = self.image.height() - self.y_min
         print('DrawObjects view bounds x: ', rect_x, '  Y:', rect_y)
-        painter.drawRect(int(self.padding_x/2), int(self.padding_y/2), rect_x, rect_y) # 20 padding
+        painter.drawRect(int(self.x_min/2), int(self.y_min/2), rect_x, rect_y) # 20 padding
 
     def drawObjects(self):
         # Redraw the objects after clearing or updating the canvas
@@ -151,8 +162,8 @@ class ViewportLayout(QLabel):
         self.image.fill(QColor("white"))
 
         # Adjust the viewport size accordingly
-        self.viewport.width = new_width - (2 * self.padding_x)
-        self.viewport.height = new_height - (2 * self.padding_y)
+        self.viewport.width = new_width - (2 * self.x_min)
+        self.viewport.height = new_height - (2 * self.y_min)
         # print(f"Resized: image to {new_width}x{new_height}, viewport to {self.viewport.width}x{self.viewport.height}")
         self.drawObjects()
 
