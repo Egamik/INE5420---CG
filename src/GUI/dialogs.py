@@ -1,5 +1,6 @@
-from typing import List, Tuple
+from typing import List
 from PyQt5.QtWidgets import QDialog, QFormLayout, QDialogButtonBox, QVBoxLayout, QLabel, QSpinBox, QLineEdit
+from base.point import Point3D
  
 class AddObjectDialog(QDialog):
     def __init__(self, parent=None):
@@ -52,14 +53,14 @@ class AddObjectDialog(QDialog):
             self.point_inputs_layout.addRow(f"Point {i + 1} Y:", y_input)
             self.point_inputs.append((x_input, y_input))
 
-    def getPointData(self) -> List[Tuple]:
+    def getPointData(self) -> List[Point3D]:
         # Retrieve data from the input fields
         points = []
         for x_input, y_input in self.point_inputs:
             try:
                 x = int(x_input.text())
                 y = int(y_input.text())
-                points.append((x, y))
+                points.append(Point3D(x, y, 1))
             except ValueError:
                 # Handle cases where the input is not a valid number
                 pass

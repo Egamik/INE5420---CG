@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QWidget, QVBoxLa
 from GUI.widgets import ControlWidget
 from GUI.dialogs import AddObjectDialog
 from GUI.viewport import Viewport, ViewportLayout
+from GUI.transform_widget import TransformationWidgets
 from utils.formatObject import formatObject
 
 class MainWindow(QMainWindow):
@@ -44,14 +45,17 @@ class MainWindow(QMainWindow):
         left_layout.addLayout(buttonLayout)
         
         # Setup viewport
-        # posMultiplier = 0.2/2
-        #self.viewport = Viewport(posMultiplier*720, posMultiplier*900, 720, 900)
         self.viewport_layout = ViewportLayout(self, None, 720, 920)
 
+        # Transformation Panel
+        trans = TransformationWidgets(self, self.viewport_layout)
+        trans_layout = trans.getLayout()
+        
         # Control Panel
         controls = ControlWidget(self.on_up, self.on_down, self.on_left, self.on_right, self.zoom_in, self.zoom_out)
         control_layout = controls.getLayout()
 
+        left_layout.addLayout(trans_layout)
         left_layout.addLayout(control_layout)
 
         # Add Left Layout to Main Layout

@@ -4,6 +4,7 @@ from PyQt5.QtGui import QPainter, QColor, QImage, QPen
 from PyQt5.QtWidgets import QLabel
 
 from graphic_obj import GraphicObject
+from base.point import Point3D
 
 class Viewport:
     def __init__(self, x: int, y: int, width: int, height: int):
@@ -15,17 +16,15 @@ class Viewport:
         self.height:int = int(height)
         self.objList: List[GraphicObject] = []
 
-    def formatPoints(self, points: List[Tuple]):
-        f_points : List[Tuple] = []
+    def formatPoints(self, points: List[Point3D]):
+        f_points : List[Point3D] = []
         for point in points:
             point_x = point[0] + self.x
             point_y = point[1] + self.y
-            f_points.append((point_x, point_y))
+            f_points.append(Point3D(point_x, point_y, 1))
         return f_points
 
     def addObject(self, obj: GraphicObject):
-        updated_points = self.formatPoints(obj.getPoints())
-        obj.setPoints(updated_points)
         self.objList.append(obj)
         print('Add object to scene: ', obj.name)
 
@@ -130,19 +129,28 @@ class ViewportLayout(QLabel):
         painter.setPen(QPen(QColor("black")))  # Set pen color for drawing
         # Draw clipping bounds
         self.drawBoundingRect(painter)
+
         for obj in self.viewport.objList:
+            
             points = obj.getPoints()
             print('Draw object: ', points)
+            
+            #TODO: apply clipping, change points to render_points
             if len(points) == 1:
-                painter.drawPoint(points[0][0], points[0][1])
+                painter.drawPoint(points[0].x, points[0].y)
+
             elif len(points) == 2:
-                painter.drawLine(points[0][0], points[0][1], points[1][0], points[1][1])
+                painter.drawLine(points[0].x, points[0].y, points[1].x, points[1].y)
+
             elif len(points) >= 3:
                 last_point = points[0]
+            
                 for point in points[1:]:
                     painter.drawLine(last_point[0], last_point[1], point[0], point[1])
                     last_point = point
-                painter.drawLine(points[0][0], points[0][1], last_point[0], last_point[1])
+            
+                painter.drawLine(points[0].x, points[0].y, last_point[0], last_point[1])
+        
         painter.end()
         self.update()  # Request a repaint to show the changes
 
