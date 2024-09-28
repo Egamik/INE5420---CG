@@ -91,10 +91,9 @@ class TransformationWidgets(QWidget):
         """Show or hide spin boxes based on the selected radio button."""
         if button == self.rotate_point:
             self.input_frame.show()
-            self.input_frame.repaint()
         else:
             self.input_frame.hide()
-            self.input_frame.repaint()
+        self.input_frame.repaint()
 
     
     def rotate_left(self):

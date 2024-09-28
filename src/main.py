@@ -4,6 +4,7 @@ from GUI.widgets import ControlWidget
 from GUI.dialogs import AddObjectDialog
 from GUI.viewport import Viewport, ViewportLayout
 from GUI.transform_widget import TransformationWidgets
+from GUI.object_viewer import ObjectTableWidget
 from utils.formatObject import formatObject
 
 class MainWindow(QMainWindow):
@@ -28,11 +29,11 @@ class MainWindow(QMainWindow):
 
         # Object List/Controls Layout
         left_layout = QVBoxLayout()
+        self.object_list = ObjectTableWidget(self)
 
         # Object List
         left_layout.addWidget(QLabel("Object List"))
-        self.object_list = QListWidget(self)
-        left_layout.addWidget(self.object_list)
+        left_layout.addWidget(self.object_list.table)
 
         # Add/Remove objects buttons
         buttonLayout = QHBoxLayout()
@@ -45,7 +46,7 @@ class MainWindow(QMainWindow):
         left_layout.addLayout(buttonLayout)
         
         # Setup viewport
-        self.viewport_layout = ViewportLayout(self, None, 720, 920)
+        self.viewport_layout = ViewportLayout(self, None, 720, 450)
 
         # Transformation Panel
         trans = TransformationWidgets(self, self.viewport_layout)
@@ -94,8 +95,12 @@ class MainWindow(QMainWindow):
         if dialog.exec_() == QDialog.Accepted:
             print('Add object')
             obj = formatObject(dialog.getPointData(), self.poli_count)
+            self.object_list.addObject(obj)
             self.viewport_layout.addObject(obj)
             self.viewport_layout.drawObjects()
+    
+    def removeObject(self):
+        print('Remove object')
 
     def drawViewport(self):
         self.viewport_layout.drawObjects()

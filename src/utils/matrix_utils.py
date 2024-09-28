@@ -12,6 +12,12 @@ def multiplyMatrices(matrices: List[np.matrix]) -> np.matrix:
 
     return matrix
 
+def rotateAroundPoint(matrix: np.matrix, angle: int, point: Point3D, axis: Axis=Axis.Z) -> np.matrix:
+    t_matrix = getTranslationMatrix(Point3D(-point.x, -point.y, -point.z))
+    r_matrix = getRotationMatrix(angle, axis)
+    i_matrix = getTranslationMatrix(point)
+    return multiplyMatrices([matrix, t_matrix, r_matrix, i_matrix])
+
 def getTranslationMatrix(t: Point3D) -> np.matrix:
     return np.matrix([
         [  1,   0,   0,   0 ],
@@ -19,6 +25,14 @@ def getTranslationMatrix(t: Point3D) -> np.matrix:
         [  0,   0,   1,   0 ],
         [t.x, t.y, t.z,   1 ]
     ])
+
+def getScaleMatrix(s: Point3D) -> np.matrix:
+  return np.matrix([
+    [s.x,   0,   0,   0 ],
+    [  0, s.y,   0,   0 ],
+    [  0,   0, s.z,   0 ],
+    [  0,   0,   0,   1 ]
+  ])
 
 
 def getRotationMatrix(r: int, axis: Axis) -> np.matrix:
