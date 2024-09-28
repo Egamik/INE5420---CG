@@ -1,14 +1,17 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout, QComboBox
 from GUI.viewport import Viewport, ViewportLayout
+from base.point import Point3D
+from graphic_obj import GraphicObject
+from utils.matrix_utils import translate
 
 class ControlWidget(QWidget):
-    def __init__(self, on_up, on_down, on_left, on_right, zoom_in, zoom_out):
-        super().__init__(None)
+    def __init__(self, parent, getSelectedObject, repaintView):
+        super().__init__(parent)
 
         self.control_layout = QGridLayout()
-        # self.zoom_scale = 0.5
-        # self.pan_scale = 100
+        self.getSelectedObject = getSelectedObject
+        self.repaintView = repaintView
 
         # Control buttons
         self.zoomin_button = QPushButton("+🔍")
@@ -18,12 +21,12 @@ class ControlWidget(QWidget):
         self.left_button = QPushButton("←")
         self.right_button = QPushButton("→")
         
-        self.zoomin_button.clicked.connect(zoom_in)
-        self.zoomout_button.clicked.connect(zoom_out)
-        self.up_button.clicked.connect(on_up)
-        self.down_button.clicked.connect(on_down)
-        self.left_button.clicked.connect(on_left)
-        self.right_button.clicked.connect(on_right)
+        # self.zoomin_button.clicked.connect(zoom_in)
+        # self.zoomout_button.clicked.connect(zoom_out)
+        self.up_button.clicked.connect(self.onUp)
+        self.down_button.clicked.connect(self.onDown)
+        self.left_button.clicked.connect(self.onLeft)
+        self.right_button.clicked.connect(self.onRight)
 
         self.control_layout.addWidget(self.zoomin_button, 1, 0)
         self.control_layout.addWidget(self.zoomout_button, 1, 2)
@@ -35,3 +38,55 @@ class ControlWidget(QWidget):
     def getLayout(self):
         return self.control_layout
 
+    def onUp(self):
+        obj: GraphicObject = self.getSelectedObject()
+        if (obj == None):
+            print('No object selected')
+            return
+        n_points = obj.getNormalizedPoints()
+        t_point = Point3D(0, 10, 0)
+        for i in range(len(n_points)):
+            n_points[i] = translate(n_points[i], t_point)
+
+        updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
+        obj.setPoints(updated_points)
+        self.repaintView()
+    
+    def onDown(self):
+        obj: GraphicObject = self.getSelectedObject()
+        if (obj == None):
+            return
+        n_points = obj.getNormalizedPoints()
+        t_point = Point3D(0, -10, 0)
+        for i in range(len(n_points)):
+            n_points[i] = translate(n_points[i], t_point)
+
+        updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
+        obj.setPoints(updated_points)
+        self.repaintView()
+        
+    def onLeft(self):
+        obj: GraphicObject = self.getSelectedObject()
+        if (obj == None):
+            return
+        n_points = obj.getNormalizedPoints()
+        t_point = Point3D(-10, 0, 0)
+        for i in range(len(n_points)):
+            n_points[i] = translate(n_points[i], t_point)
+
+        updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
+        obj.setPoints(updated_points)
+        self.repaintView()
+        
+    def onRight(self):
+        obj: GraphicObject = self.getSelectedObject()
+        if (obj == None):
+            return
+        n_points = obj.getNormalizedPoints()
+        t_point = Point3D(10, 0, 0)
+        for i in range(len(n_points)):
+            n_points[i] = translate(n_points[i], t_point)
+
+        updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
+        obj.setPoints(updated_points)
+        self.repaintView()

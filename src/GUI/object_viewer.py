@@ -1,6 +1,5 @@
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
-    QPushButton, QApplication, QMessageBox
+    QWidget, QTableWidget, QTableWidgetItem, QMessageBox
 )
 from typing import List
 from graphic_obj import GraphicObject
@@ -45,22 +44,13 @@ class ObjectTableWidget(QWidget):
         else:
             QMessageBox.warning(self, "Selection Error", "Please select a row to remove.")
 
-# Example usage:
-if __name__ == "__main__":
-    import sys
-
-    app = QApplication(sys.argv)
-
-    # Example objects to display in the table
-    objects = [
-        {'id': 1, 'name': 'Object 1', 'value': 100},
-        {'id': 2, 'name': 'Object 2', 'value': 200},
-        {'id': 3, 'name': 'Object 3', 'value': 300}
-    ]
-    
-    # Create the widget
-    table_widget = ObjectTableWidget(objects)
-    table_widget.setWindowTitle("Objects Table with Add/Remove")
-    table_widget.show()
-
-    sys.exit(app.exec_())
+    def getSelectedObject(self) -> GraphicObject | None:
+        """Retrieve the currently selected object from the table."""
+        selected_row = self.table.currentRow()
+        if selected_row >= 0:
+            name = self.table.item(selected_row, 0).text()
+            for obj in self.objects:
+                if obj.name == name:
+                    return obj
+            return None
+            

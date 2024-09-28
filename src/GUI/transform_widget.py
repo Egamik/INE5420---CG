@@ -1,18 +1,26 @@
 from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFormLayout, QRadioButton,
-    QLabel, QSpinBox, QPushButton, QButtonGroup, QFrame
+    QLabel, QSpinBox, QPushButton, QButtonGroup, QFrame, QMessageBox
 )
 from GUI.viewport import ViewportLayout
+from graphic_obj import GraphicObject
+from utils.matrix_utils import getCenterPointMatrix, rotateAroundOrigin, rotateAroundPoint
+from base.point import Point3D
 
 class TransformationWidgets(QWidget):
-    def __init__(self, parent, viewport: ViewportLayout):
+    def __init__(self, parent, getObject, repaintView):
         super().__init__(parent)
+        
+        # Object to be used in transformations
+        self.object: GraphicObject # Has to be initialized before usage
+        self.point = Point3D(0, 0, 0)
+        self.getSelectedObject = getObject
+        self.repaintView = repaintView
         
         # Title Label
         title = QLabel('Rotate Around:')
-        # title.setAlignment(Qt.AlignCenter)
         title.setStyleSheet("font-weight: bold; font-size: 16px;")
-        self.viewport = viewport
+        
         # Layouts
         self.main_layout = QVBoxLayout()
         self.radial_layout = QHBoxLayout()
@@ -32,7 +40,7 @@ class TransformationWidgets(QWidget):
         self.radio_group.addButton(self.rotate_zero)
         self.radio_group.addButton(self.rotate_point)
         self.radio_group.addButton(self.rotate_center)
-        self.radio_group.buttonClicked.connect(self.on_radio_button_clicked)
+        self.radio_group.buttonClicked.connect(self.onRadioButtonClicked)
         
         # Add Radio Buttons to Layout
         self.radial_layout.addWidget(self.rotate_zero)
@@ -41,15 +49,10 @@ class TransformationWidgets(QWidget):
         
         # Spin Boxes for Point Coordinates
         self.x_input = QSpinBox()
-        # self.x_input.setRange(-1000, 1000)
-        self.x_input.setValue(0)
-        
         self.y_input = QSpinBox()
-        # self.y_input.setRange(-1000, 1000)
-        self.y_input.setValue(0)
-        
         self.z_input = QSpinBox()
-        # self.z_input.setRange(-1000, 1000)
+        self.x_input.setValue(0)        
+        self.y_input.setValue(0)        
         self.z_input.setValue(0)
         
         # Labels
@@ -70,8 +73,8 @@ class TransformationWidgets(QWidget):
         self.rotate_right_btn = QPushButton('Rotate Right')
         
         # Connect Buttons to Handlers
-        self.rotate_left_btn.clicked.connect(self.rotate_left)
-        self.rotate_right_btn.clicked.connect(self.rotate_right)
+        self.rotate_left_btn.clicked.connect(self.rotateLeft)
+        self.rotate_right_btn.clicked.connect(self.rotateRight)
         
         # Add Rotate Buttons to Layout
         self.button_layout.addWidget(self.rotate_left_btn)
@@ -86,8 +89,11 @@ class TransformationWidgets(QWidget):
         
     def getLayout(self):
         return self.main_layout
-        
-    def on_radio_button_clicked(self, button):
+
+    def setSelectedObject(self, object: GraphicObject):
+        self.object = object
+
+    def onRadioButtonClicked(self, button):
         """Show or hide spin boxes based on the selected radio button."""
         if button == self.rotate_point:
             self.input_frame.show()
@@ -95,54 +101,89 @@ class TransformationWidgets(QWidget):
             self.input_frame.hide()
         self.input_frame.repaint()
 
-    
-    def rotate_left(self):
+    def rotateLeft(self):
         """Handle the rotate left action based on selected option."""
+        selected_obj: GraphicObject = self.getSelectedObject()
+        if (selected_obj == None):
+            QMessageBox.warning(self, "Selection Error", "Select object before operations")
+            return
+        self.setSelectedObject(selected_obj)
+        
         if self.rotate_zero.isChecked():
-            self.rotate_around_origin(direction='left')
+            self.rotateAroundOrigin('left')
+        
         elif self.rotate_point.isChecked():
-            point = self.get_point()
-            self.rotate_around_point(point, direction='left')
+            self.point = self.getPoint()
+            self.rotateAroundPoint('left')
+            
         elif self.rotate_center.isChecked():
-            self.rotate_around_center(direction='left')
-    
-    def rotate_right(self):
+            self.rotateAroundCenter('left')
+        
+        self.repaintView()
+
+    def rotateRight(self):
         """Handle the rotate right action based on selected option."""
+        selected_obj = self.getSelectedObject()
+        if (selected_obj == None):
+            QMessageBox.warning(self, "Selection Error", "Select object before operations")
+            return
+        self.setSelectedObject(selected_obj)
+        
         if self.rotate_zero.isChecked():
-            self.rotate_around_origin(direction='right')
+            self.rotateAroundOrigin('right')
+
         elif self.rotate_point.isChecked():
-            point = self.get_point()
-            self.rotate_around_point(point, direction='right')
+            self.rotateAroundPoint('right')
+
         elif self.rotate_center.isChecked():
-            self.rotate_around_center(direction='right')
+            self.rotateAroundCenter('right')
+        
+        self.repaintView()
     
-    def get_point(self):
+    def getPoint(self) -> Point3D:
         """Retrieve the (x, y, z) coordinates from spin boxes."""
         x = self.x_input.value()
         y = self.y_input.value()
         z = self.z_input.value()
-        return (x, y, z)
+        return Point3D(x, y, z)
     
-    # Placeholder methods for rotation actions
-    def rotate_around_origin(self, direction):
+    # Change for 3D
+    def rotateAroundOrigin(self, direction):
         print(f"Rotating around origin to the {direction}.")
-        # Implement your rotation logic here
+        obj: GraphicObject = self.getSelectedObject()
+        normal_matrix = obj.getNormalizedPoints()
+        angle = 10 if (direction == 'left') else -10
+        
+        for i in range(len(normal_matrix)):
+            normal_matrix[i] = rotateAroundOrigin(normal_matrix[i], angle)
+            
+        obj.setPoints(list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), normal_matrix)))
+        self.repaintView()
     
-    def rotate_around_point(self, point, direction):
-        print(f"Rotating around point {point} to the {direction}.")
-        # Implement your rotation logic here
+    def rotateAroundPoint(self, direction):
+        print(f"Rotating around point {self.point} to the {direction}.")
+        ref_point = Point3D(self.point.x, self.point.y, 0)
+        obj: GraphicObject = self.getSelectedObject()
+        normal_matrix = obj.getNormalizedPoints()
+        angle: int = 10 if (direction == 'left') else -10
+        
+        for i in range(len(normal_matrix)):
+            normal_matrix[i] = rotateAroundPoint(normal_matrix[i], angle, ref_point)
+            
+        obj.setPoints(list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), normal_matrix)))
+        self.repaintView()
+
     
-    def rotate_around_center(self, direction):
+    def rotateAroundCenter(self, direction):
         print(f"Rotating around center to the {direction}.")
-        # Implement your rotation logic here
+        obj: GraphicObject = self.getSelectedObject()
+        normal_matrix = obj.getNormalizedPoints()
+        center_point = getCenterPointMatrix(normal_matrix)
+        angle: int = 10 if (direction == 'left') else -10
+        
+        for i in range(len(normal_matrix)):
+            normal_matrix[i] = rotateAroundPoint(normal_matrix[i],  angle, center_point)
+        
+        obj.setPoints(list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), normal_matrix)))
+        self.repaintView()
 
-# Example usage:
-if __name__ == "__main__":
-    import sys
-    from PyQt5.QtWidgets import QApplication
-
-    app = QApplication(sys.argv)
-    window = TransformationWidgets()
-    window.setWindowTitle("Transformation Widget")
-    window.show()
-    sys.exit(app.exec_())

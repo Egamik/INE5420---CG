@@ -1,7 +1,8 @@
 from enum import Enum
 from typing import List
 from PyQt5.QtGui import QColor
-from base.point import Point3D
+from base.point import Point3D, Point2D
+import numpy as np
 
 class GraphicObjectType(Enum):
     Point = 1
@@ -10,9 +11,10 @@ class GraphicObjectType(Enum):
 
 class GraphicObject():
     def __init__(self, name: str, type: GraphicObjectType, color: QColor):
-        self.name = name
-        self.type = type
-        self.color = color
+        self.name: str = name
+        self.type: GraphicObjectType = type
+        self.color: QColor = color
+        self.points: List[Point3D] = None
 
     def getPoints(self) -> List[Point3D]:
         return self.points
@@ -20,6 +22,9 @@ class GraphicObject():
     def setPoints(self, points: List[Point3D]):
         self.points = points
 
+    def getNormalizedPoints(self) -> List[np.matrix]:
+        return list(map(lambda p: np.matrix([p.x, p.y, 1, 1]), self.points))
+        
 class Point(GraphicObject):
     def __init__(self, name: str, color: QColor, point: Point3D):
         super().__init__(name, GraphicObjectType.Point, color)

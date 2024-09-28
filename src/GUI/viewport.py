@@ -93,6 +93,12 @@ class ViewportLayout(QLabel):
     def addToPoints(self, x: int, y: int):
         self.viewport.addToPoints(x, y)
 
+    def getObjectList(self):
+        return self.viewport.getObjectList()
+    
+    def setObjectList(self, obj_list: List[GraphicObject]):
+        self.viewport.setObjectList(obj_list)
+    
     # Returns boundary points clockwise
     def getBoundaries(self):
         
@@ -123,6 +129,7 @@ class ViewportLayout(QLabel):
 
     def drawObjects(self):
         # Redraw the objects after clearing or updating the canvas
+        print('Viewport::drawObjects')
         self.image.fill(QColor("white"))  # Clear the image before drawing
         painter = QPainter(self.image)  # Use QPainter to draw on the QImage
         painter.setPen(QPen(QColor("black")))  # Set pen color for drawing
@@ -134,7 +141,7 @@ class ViewportLayout(QLabel):
             points = obj.getPoints()
             print('Draw object: ', obj.name, '  color: ', obj.color)
             
-            #TODO: apply clipping, change points to render_points
+            #TODO: apply clipping
             x1 = round(points[0].x + self.center_x)
             y1 = round(points[0].y + self.center_y)
             if len(points) == 1:
