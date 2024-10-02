@@ -4,7 +4,8 @@ from PyQt5.QtGui import QPainter, QColor, QImage, QPen
 from PyQt5.QtWidgets import QLabel
 
 from graphic_obj import GraphicObject
-from base.point import Point3D
+from base.point import Point3D, Point2D
+from utils.clipping import applyClipping
 
 class Viewport:
     def __init__(self, x: int, y: int, width: int, height: int):
@@ -100,11 +101,11 @@ class ViewportLayout(QLabel):
         self.viewport.setObjectList(obj_list)
     
     # Returns boundary points clockwise
-    def getBoundaries(self):
-        
-        bounds: List[Tuple] = []
-        top_l    =  (self.x_min, self.y_min)
-        bottom_r =  (self.x_min + self.view_w, self.y_min + self.view_h)
+    def getBoundaries(self) -> List[Point2D]:
+        """ Get points for top left and bottom right """
+        bounds: List[Point2D] = []
+        top_l    =  Point2D(self.x_min, self.y_min)
+        bottom_r =  Point2D(self.x_min + self.view_w, self.y_min + self.view_h)
         
         bounds.append(top_l)
         bounds.append(bottom_r)
@@ -122,13 +123,12 @@ class ViewportLayout(QLabel):
         self.update()  # Repaint
 
     def drawBoundingRect(self, painter: QPainter):
-        rect_x = self.image.width() - 2*self.x_min
-        rect_y = self.image.height() - 2*self.y_min
-        print('Draw bounding rect x: ', rect_x, '  Y:', rect_y)
+        rect_x = self.image.width() - 2 * self.x_min
+        rect_y = self.image.height() - 2 * self.y_min
         painter.drawRect(self.x_min, self.y_min, rect_x, rect_y) 
 
     def drawObjects(self):
-        # Redraw the objects after clearing or updating the canvas
+        """ Redraw the objects after clearing or updating the canvas """
         print('Viewport::drawObjects')
         self.image.fill(QColor("white"))  # Clear the image before drawing
         painter = QPainter(self.image)  # Use QPainter to draw on the QImage
@@ -139,37 +139,35 @@ class ViewportLayout(QLabel):
         for obj in self.viewport.objList:
             
             points = obj.getPoints()
+            render_points: List[Point3D] = []
             print('Draw object: ', obj.name, '  color: ', obj.color)
             
-            #TODO: apply clipping
-            x1 = round(points[0].x + self.center_x)
-            y1 = round(points[0].y + self.center_y)
-            if len(points) == 1:
-                painter.drawPoint(x1, y1)
-
-            elif len(points) == 2:
-                x2 = round(points[1].x + self.center_x)
-                y2 = round(points[1].y + self.center_y)
-                print('Draw line: ', x1, ' ', y1, ' ', x2, ' ', y2)
-                painter.drawLine(x1, y1, x2, y2)
-
-            elif len(points) >= 3:
-                last_point = points[0]
+            # Transform points
+            for point in points:
+                x = round(point.x + self.center_x)
+                y = round(point.y + self.center_y)
+                render_points.append(Point3D(x, y, 1))
             
-                for point in points[1:]:
-                    x1 = round(last_point.x + self.center_x)
-                    y1 = round(last_point.y + self.center_y)
-                    x2 = round(point.x + self.center_x)
-                    y2 = round(point.y + self.center_y)
-                    painter.drawLine(x1, y1, x2, y2)
+            clipped_points = applyClipping(render_points, self.getBoundaries())
+            
+            if clipped_points == None:
+                continue
+            
+            print('Clipped points')
+            for f in clipped_points:
+                print('x: ', f.x, ' y: ', f.y)
+            if len(clipped_points) == 1:
+                painter.drawPoint(clipped_points[0].x, clipped_points[0].y)
+
+            elif len(clipped_points) == 2:
+                print('Draw line')
+                painter.drawLine(clipped_points[0].x, clipped_points[0].y, clipped_points[1].x, clipped_points[1].y)
+
+            elif len(clipped_points) >= 3:
+                last_point = clipped_points[0]
+                for point in clipped_points[1:]:
+                    painter.drawLine(last_point.x, last_point.y, point.x, point.y)
                     last_point = point
-            
-                x1 = round(points[0].x + self.center_x)
-                y1 = round(points[0].y + self.center_y)
-                x2 = round(last_point.x + self.center_x)
-                y2 = round(last_point.y + self.center_y)
-                
-                painter.drawLine(x1, y1, x2, y2)
         
         painter.end()
         self.update()  # Request a repaint to show the changes

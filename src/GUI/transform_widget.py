@@ -173,7 +173,6 @@ class TransformationWidgets(QWidget):
         obj.setPoints(list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), normal_matrix)))
         self.repaintView()
 
-    
     def rotateAroundCenter(self, direction):
         print(f"Rotating around center to the {direction}.")
         obj: GraphicObject = self.getSelectedObject()

@@ -10,4 +10,12 @@ def formatObject(points: List[Point3D], count: int) -> GraphicObject:
         return Line(str(count), QColor("black"), points[0], points[1])
     
     else:
-        return Polygon(str(count), QColor("black"), points)
+        # Format points into lines
+        formatted = []
+        for i in range(len(points) - 1):
+            formatted.append(points[i])
+            formatted.append(points[i+1])
+        formatted.append(points[len(points) - 1])
+        formatted.append(points[0])
+        
+        return Polygon(str(count), QColor("black"), formatted)
