@@ -3,9 +3,10 @@ from typing import List
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGraphicsItem, QListWidget, QGraphicsView, QGraphicsScene, QLabel, QAction
 from GUI.widgets import ControlWidget
 from GUI.dialogs import AddObjectDialog
-from GUI.viewport import Viewport, ViewportLayout
+from GUI.viewport import ViewportLayout
 from GUI.transform_widget import TransformationWidgets
 from GUI.object_viewer import ObjectTableWidget
+from GUI.clipping_widget import LineClippingWidget
 from graphic_obj import GraphicObject
 from utils.formatObject import formatObject
 
@@ -22,6 +23,7 @@ class MainWindow(QMainWindow):
         self.poli_list: List[GraphicObject] = []
         self.pan_scale: int = 50
         self.zoom_scale: float = 0.2
+        self.toggle_clip = True
 
         # Create Menu bar
         self.createMenuBar()
@@ -31,12 +33,15 @@ class MainWindow(QMainWindow):
         left_layout = QVBoxLayout()
         right_layout = QVBoxLayout()
         # GUI components
-        self.viewport_layout = ViewportLayout(self, None, 720, 450)
+        self.viewport_layout = ViewportLayout(self, 720, 450, self.getClipType)
         self.object_list = ObjectTableWidget(self)
         self.trans_controls = TransformationWidgets(self, self.object_list.getSelectedObject, self.viewport_layout.drawObjects)
         self.controls = ControlWidget(self, self.object_list.getSelectedObject, self.viewport_layout.drawObjects)
-        trans_layout = self.trans_controls.getLayout()
+        self.clip_controls = LineClippingWidget(self.setClip)
+        
         control_layout = self.controls.getLayout()
+        trans_layout = self.trans_controls.getLayout()
+        clip_layout = self.clip_controls.getLayout()
 
         # Left components
         buttonLayout = QHBoxLayout()
@@ -50,6 +55,8 @@ class MainWindow(QMainWindow):
         buttonLayout.addWidget(self.addButton)
         left_layout.addWidget(QLabel("Object List"))
         left_layout.addWidget(self.object_list.table)
+        
+        left_layout.addLayout(clip_layout)
         left_layout.addLayout(buttonLayout)
         left_layout.addLayout(trans_layout)
         left_layout.addLayout(control_layout)
@@ -97,6 +104,12 @@ class MainWindow(QMainWindow):
     def removeObject(self):
         print('Remove object')
         self.viewport_layout.drawObjects()
+        
+    def setClip(self, b: bool):
+        self.toggle_clip = b
+    
+    def getClipType(self):
+        return self.toggle_clip
 
 # Main Application
 if __name__ == "__main__":

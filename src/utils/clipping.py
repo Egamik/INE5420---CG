@@ -7,7 +7,7 @@ RIGHT  = 2  # 0010
 BOTTOM = 4  # 0100
 TOP    = 8  # 1000
 
-def applyClipping(points: List[Point3D], boundaries: List[Point2D]):
+def applyClipping(points: List[Point3D], boundaries: List[Point2D], clip: bool):
 
     if len(points) == 1:
         print('Clip point')
@@ -20,25 +20,28 @@ def applyClipping(points: List[Point3D], boundaries: List[Point2D]):
         
     elif len(points) == 2:
         #if seila:
-        print('Clip line')
-        if True:
+        if clip:
+            print('Clip line Cohen-Sutherland')
             new_points = cohenSutherland(boundaries, points[0], points[1])
             if len(new_points) != 0:
-                to3d = [Point3D(new_points[0].x, new_points[0].y, 1), Point3D(new_points[1].x, new_points[1].y, 1)]
+                to3d = [Point3D(round(new_points[0].x), round(new_points[0].y), 1), Point3D(round(new_points[1].x), round(new_points[1].y), 1)]
                 return to3d
             return []
         else:
+            print('Clip line Liang-Barsky')
             new_points = liangBarsky(boundaries, points[0], points[1])
             if len(new_points) == 2:
-                return [Point3D(new_points[0].x, new_points[1].y, 1)]
+                return [Point3D(round(new_points[0].x), round(new_points[0].y), 1), Point3D(round(new_points[1].x), round(new_points[1].y), 1)]
             return []
             
     else:
         print('Clip poli')
         new_points = sutherlandHodman(points, boundaries)
+        gambs = []
         for point in new_points:
             print('x: ', point.x, ' y: ', point.y)
-        return new_points
+            gambs.append(Point3D(round(point.x), round(point.y), 1))
+        return gambs
 
 #TODO: decidir como tratar as coordenadas do QImage
 def getRegionCode(point: Point3D, minBound: Point2D, maxBound: Point2D):
@@ -61,18 +64,24 @@ def getRegionCode(point: Point3D, minBound: Point2D, maxBound: Point2D):
 
 def cohenSutherland(bounds: List[Point2D], start_point: Point3D, end_point: Point3D) -> List[Point2D]:
     """ Algoritmo Cohen-Sutherland para clipping de linhas """
-    x_min = bounds[0].x
-    y_min = bounds[0].y
-    x_max = bounds[1].x
-    y_max = bounds[1].y
-
+    # x_min = bounds[0].x
+    # y_min = bounds[1].y
+    # x_max = bounds[1].x
+    # y_max = bounds[0].y
+    p_min = Point2D(bounds[0].x, bounds[1].y)
+    p_max = Point2D(bounds[1].x, bounds[0].y)
+    print('pmin: ', p_min.x, '  ', p_min.y)
+    print('pmax: ', p_max.x, '  ', p_max.y)
+    print('start: ', start_point.x, ' ', start_point.y)
+    print('end: ', end_point.x, ' ', end_point.y)
+    
     new_start = start_point
     new_end = end_point
-    start_rc: int = getRegionCode(start_point, bounds[0], bounds[1])
-    end_rc: int = getRegionCode(end_point, bounds[0], bounds[1])
+    start_rc: int = getRegionCode(start_point, p_min, p_max)
+    end_rc: int = getRegionCode(end_point, p_min, p_max)
 
     while True:
-
+        print('CohenSutherland s_rc: ', start_rc, '\te_rc: ', end_rc)
         if start_rc == 0 and end_rc == 0:
             return [new_start, new_end]
         
@@ -90,23 +99,23 @@ def cohenSutherland(bounds: List[Point2D], start_point: Point3D, end_point: Poin
                 code_out = end_rc
 
             if code_out & TOP:
-                new_x = start_point.x + (end_point.x - start_point.x) * (y_max - start_point.y) / (end_point.y - start_point.y)
-                new_y = y_max
+                new_x = start_point.x + (end_point.x - start_point.x) * (p_max.y - start_point.y) / (end_point.y - start_point.y)
+                new_y = p_max.y
             
             elif code_out & BOTTOM:
-                new_x = start_point.x + (end_point.x - start_point.x) * (y_min - start_point.y) / (end_point.y - start_point.y)
-                new_y = y_min
+                new_x = start_point.x + (end_point.x - start_point.x) * (p_min.y - start_point.y) / (end_point.y - start_point.y)
+                new_y = p_min.y
             
             elif code_out & RIGHT:
-                new_y = start_point.y + (end_point.y - start_point.y) * (x_max - start_point.x) / (end_point.x - start_point.x)
-                new_x = x_max
+                new_y = start_point.y + (end_point.y - start_point.y) * (p_max.x - start_point.x) / (end_point.x - start_point.x)
+                new_x = p_max.x
             
             elif code_out & LEFT:
-                new_y = start_point.y + (end_point.y - start_point.y) * (x_min - start_point.x) / (end_point.x - start_point.x)
-                new_x = x_min
+                new_y = start_point.y + (end_point.y - start_point.y) * (p_min.x - start_point.x) / (end_point.x - start_point.x)
+                new_x = p_min.x
             
             new_point = Point2D(new_x, new_y)
-            new_code = getRegionCode(new_point, bounds[0], bounds[1])
+            new_code = getRegionCode(new_point, p_min, p_max)
 
             if code_out == start_rc:
                 new_start = new_point
@@ -118,9 +127,9 @@ def cohenSutherland(bounds: List[Point2D], start_point: Point3D, end_point: Poin
 
 def liangBarsky(bounds: List[Point2D], start_point: Point3D, end_point: Point3D) -> List[Point2D]:
     x_min = bounds[0].x
-    y_min = bounds[0].y
+    y_min = bounds[1].y
     x_max = bounds[1].x
-    y_max = bounds[1].y
+    y_max = bounds[0].y
 
     delta_x: int = round(end_point.x - start_point.x)
     delta_y: int = round(end_point.y - start_point.y)
@@ -131,13 +140,17 @@ def liangBarsky(bounds: List[Point2D], start_point: Point3D, end_point: Point3D)
     t_exit = 1.0
 
     for i in range(len(p)):
-        if p[i] == 0 and q[i] < 0:
-            return []
+        if p[i] == 0:
+            # Line is parallel to the boundary
+            if q[i] < 0:
+                # Line is outside the boundary
+                return []
+            # If q[i] >= 0, the line is parallel but inside the boundary, so we continue
         else:
             t = q[i] / p[i]
             if p[i] < 0 and t > t_enter:
                 t_enter = t
-            elif t < t_exit:
+            elif p[i] > 0 and t < t_exit:
                 t_exit = t
     
     if t_enter > t_exit:
@@ -148,45 +161,57 @@ def liangBarsky(bounds: List[Point2D], start_point: Point3D, end_point: Point3D)
 
     return [new_start, new_end]
 
+
 # Clipping poligonos
 #TODO mudar tipo de input pra Line
 def getIntersectionPoint(line1: List[Point3D], line2: List[Point3D]) -> Point2D:
-    # y - y0 = m *(x-x0)
-    # y = m * (x-x0) + y0
-    # x = ((y-y0)/m) + x0
+    """
+    Calculates the intersection point between two lines represented by two Point3D points each.
+    Returns the intersection as a Point2D or None if the lines are parallel.
+    """
     if len(line1) != 2 or len(line2) != 2:
-        print('Error getIntersection. Wrong len')
+        print('Error getIntersection. Wrong length of lines')
         return None
-    p1 = line1[0]
-    p2 = line1[1]
-    p3 = line2[0]
-    p4 = line2[1]
 
+    p1, p2 = line1[0], line1[1]
+    p3, p4 = line2[0], line2[1]
+
+    # Numerators for x and y
     nx = (p1.x * p2.y - p1.y * p2.x) * (p3.x - p4.x) - (p1.x - p2.x) * (p3.x * p4.y - p3.y * p4.x)
     ny = (p1.x * p2.y - p1.y * p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x * p4.y - p3.y * p4.x)
     
-    # diferenca dos coeficinetes angulares
+    # Denominator (checking for parallel lines)
     den = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x)
     
-    # linhas paralelas
     if den == 0:
+        # Lines are parallel
         return None
     
-    return Point2D(nx/den, ny/den)
+    # Return the intersection point as a Point2D
+    return Point2D(nx / den, ny / den)
 
-def sutherlandHodman(polygon: List[Point3D], bounds: List[Point2D]):
+def sutherlandHodman(polygon: List[Point3D], bounds: List[Point2D]) -> List[Point3D]:
+    """
+    Sutherland-Hodgman polygon clipping algorithm.
+    Clips a polygon against rectangular bounds and returns the clipped polygon.
+    The bounds are given as two Point2D objects: bottom-left and top-right corners.
+    """
     
     def isInside(point: Point3D, edge_start: Point2D, edge_end: Point2D) -> bool:
+        """ Determines if a point is inside the boundary formed by an edge. """
         return (edge_end.x - edge_start.x) * (point.y - edge_start.y) > (edge_end.y - edge_start.y) * (point.x - edge_start.x)
     
     final_poli = polygon.copy()
+    
+    # Defining the boundary edges of the clipping rectangle
     boundaries = [bounds[0], Point2D(bounds[1].x, bounds[0].y), bounds[1], Point2D(bounds[0].x, bounds[1].y)]
     
+    # Clip polygon against each boundary (left, right, top, bottom)
     for i in range(len(boundaries)):
         next_poli = final_poli.copy()
         final_poli = []
-        edge_start = boundaries[i-1]
-        edge_end = boundaries[i]
+        edge_start = boundaries[i-1]  # Previous boundary edge
+        edge_end = boundaries[i]      # Current boundary edge
         
         for j in range(len(next_poli)):
             curr_edge_s = next_poli[j-1]
@@ -194,11 +219,16 @@ def sutherlandHodman(polygon: List[Point3D], bounds: List[Point2D]):
             
             if isInside(curr_edge_e, edge_start, edge_end):
                 if not isInside(curr_edge_s, edge_start, edge_end):
-                    intersec = getIntersectionPoint([edge_start, edge_end], [curr_edge_s, curr_edge_e])
-                    final_poli.append(intersec)
-            
+                    # Current edge crosses the boundary, add intersection point
+                    intersec = getIntersectionPoint([curr_edge_s, curr_edge_e], [Point3D(edge_start.x, edge_start.y, 1), Point3D(edge_end.x, edge_end.y, 1)])
+                    if intersec:
+                        final_poli.append(Point3D(intersec.x, intersec.y, 1))
+                # Add current point if it's inside
+                final_poli.append(curr_edge_e)
             elif isInside(curr_edge_s, edge_start, edge_end):
-                intersec = getIntersectionPoint([edge_start, edge_end], [curr_edge_s, curr_edge_e])
-                final_poli.append(intersec)
+                # Edge crosses the boundary, add intersection point
+                intersec = getIntersectionPoint([curr_edge_s, curr_edge_e], [Point3D(edge_start.x, edge_start.y, 1), Point3D(edge_end.x, edge_end.y, 1)])
+                if intersec:
+                    final_poli.append(Point3D(intersec.x, intersec.y, 1))
     
     return final_poli

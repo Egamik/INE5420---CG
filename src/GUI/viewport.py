@@ -27,11 +27,9 @@ class Viewport:
 
     def addObject(self, obj: GraphicObject):
         self.objList.append(obj)
-        print('Add object to scene: ', obj.name)
 
     def removeObject(self, obj: GraphicObject):
         self.objList.remove(obj)
-        print('Remove object from scene: ', obj.name)
 
     def getObjectList(self):
         return self.objList
@@ -64,19 +62,24 @@ class Viewport:
 
 class ViewportLayout(QLabel):
 
-    def __init__(self, parent, window, width, height):
+    def __init__(self, parent, width, height, getClipType):
         super().__init__(parent=parent)
-        self.window = window
         self.resize(int(width), int(height))
         self.image = QImage(int(width), int(height), QImage.Format_ARGB32)
         self.image.fill(QColor("white"))  # White background
+        
+        self.getClipType = getClipType
         # Padding
-        self.x_min = 20
-        self.y_min = 20
-        self.view_w = self.image.width() - (2 * self.x_min)
-        self.view_h = self.image.height() - (2 * self.y_min)
-        self.center_x = self.x_min + (self.image.width() / 2)
-        self.center_y = self.y_min + (self.image.height() / 2)
+        self.x_padding = 20
+        self.y_padding = 20
+        # min
+        self.x_min = - self.image.width() // 2 + self.x_padding
+        self.y_min = - self.image.height() // 2 + self.y_padding
+        
+        self.view_w = self.image.width() - (2 * self.x_padding)
+        self.view_h = self.image.height() - (2 * self.y_padding)
+        self.center_x = self.x_padding + (self.image.width() / 2)
+        self.center_y = self.y_padding + (self.image.height() / 2)
         
         self.viewport = Viewport(int(self.view_w / 2), int(self.view_h / 2), self.view_w, self.view_h)
         
@@ -104,9 +107,11 @@ class ViewportLayout(QLabel):
     def getBoundaries(self) -> List[Point2D]:
         """ Get points for top left and bottom right """
         bounds: List[Point2D] = []
-        top_l    =  Point2D(self.x_min, self.y_min)
-        bottom_r =  Point2D(self.x_min + self.view_w, self.y_min + self.view_h)
-        
+        top_l    =  Point2D(self.x_min, -self.y_min)
+        bottom_r =  Point2D(-self.x_min, self.y_min)
+        print('Get bounds')
+        print('x: ', top_l.x, ' y: ', top_l.y)
+        print('x: ', bottom_r.x, ' y: ', bottom_r.y)
         bounds.append(top_l)
         bounds.append(bottom_r)
         return bounds
@@ -121,11 +126,15 @@ class ViewportLayout(QLabel):
         self.drawBoundingRect(painter)
         painter.end()
         self.update()  # Repaint
+        
+    # Transforms point to use (width/2, heigth/2) as center
+    def transformToCartesian(self, point: Point3D):
+        return Point3D(self.image.width() // 2 + point.x, self.image.height() // 2 - point.y, 1)
 
     def drawBoundingRect(self, painter: QPainter):
-        rect_x = self.image.width() - 2 * self.x_min
-        rect_y = self.image.height() - 2 * self.y_min
-        painter.drawRect(self.x_min, self.y_min, rect_x, rect_y) 
+        rect_x = self.image.width() - 2 * self.x_padding
+        rect_y = self.image.height() - 2 * self.y_padding
+        painter.drawRect(self.x_padding, self.y_padding, rect_x, rect_y) 
 
     def drawObjects(self):
         """ Redraw the objects after clearing or updating the canvas """
@@ -143,29 +152,29 @@ class ViewportLayout(QLabel):
             print('Draw object: ', obj.name, '  color: ', obj.color)
             
             # Transform points
-            for point in points:
-                x = round(point.x + self.center_x)
-                y = round(point.y + self.center_y)
-                render_points.append(Point3D(x, y, 1))
-            
-            clipped_points = applyClipping(render_points, self.getBoundaries())
+            clipped_points = applyClipping(points, self.getBoundaries(), self.getClipType())
             
             if clipped_points == None:
                 continue
             
+            for point in clipped_points:
+                p = self.transformToCartesian(point)
+                render_points.append(p)
+            
             print('Clipped points')
             for f in clipped_points:
                 print('x: ', f.x, ' y: ', f.y)
-            if len(clipped_points) == 1:
-                painter.drawPoint(clipped_points[0].x, clipped_points[0].y)
+                
+            if len(render_points) == 1:
+                painter.drawPoint(round(render_points[0].x), render_points[0].y)
 
-            elif len(clipped_points) == 2:
+            elif len(render_points) == 2:
                 print('Draw line')
-                painter.drawLine(clipped_points[0].x, clipped_points[0].y, clipped_points[1].x, clipped_points[1].y)
+                painter.drawLine(render_points[0].x, render_points[0].y, render_points[1].x, render_points[1].y)
 
-            elif len(clipped_points) >= 3:
-                last_point = clipped_points[0]
-                for point in clipped_points[1:]:
+            elif len(render_points) >= 3:
+                last_point = render_points[0]
+                for point in render_points[1:]:
                     painter.drawLine(last_point.x, last_point.y, point.x, point.y)
                     last_point = point
         
@@ -188,8 +197,8 @@ class ViewportLayout(QLabel):
         self.image.fill(QColor("white"))
 
         # Adjust the viewport size accordingly
-        self.viewport.width = new_width - (2 * self.x_min)
-        self.viewport.height = new_height - (2 * self.y_min)
+        self.viewport.width = new_width - (2 * self.x_padding)
+        self.viewport.height = new_height - (2 * self.y_padding)
         # print(f"Resized: image to {new_width}x{new_height}, viewport to {self.viewport.width}x{self.viewport.height}")
         self.drawObjects()
 
