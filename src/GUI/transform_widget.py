@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (
     QLabel, QSpinBox, QPushButton, QButtonGroup, QFrame, QMessageBox
 )
 from GUI.viewport import ViewportLayout
-from graphic_obj import GraphicObject
+from base.graphic_obj import GraphicObject
 from utils.matrix_utils import getCenterPointMatrix, rotateAroundOrigin, rotateAroundPoint
 from base.point import Point3D
 

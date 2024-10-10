@@ -1,4 +1,4 @@
-from graphic_obj import *
+from base.graphic_obj import *
 
 def formatObject(points: List[Point3D], count: int) -> GraphicObject:
     count += 1

@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QWidget, QTableWidget, QTableWidgetItem, QMessageBox
 )
 from typing import List
-from graphic_obj import GraphicObject
+from base.graphic_obj import GraphicObject
 
 class ObjectTableWidget(QWidget):
     def __init__(self, parent=None):

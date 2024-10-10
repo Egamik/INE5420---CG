@@ -2,7 +2,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout, QComboBox
 from GUI.viewport import Viewport, ViewportLayout
 from base.point import Point3D
-from graphic_obj import GraphicObject
+from base.graphic_obj import GraphicObject
 from utils.matrix_utils import translate
 
 class ControlWidget(QWidget):

@@ -3,7 +3,7 @@ from typing import List, Tuple
 from PyQt5.QtGui import QPainter, QColor, QImage, QPen
 from PyQt5.QtWidgets import QLabel
 
-from graphic_obj import GraphicObject
+from base.graphic_obj import GraphicObject
 from base.point import Point3D, Point2D
 from utils.clipping import applyClipping
 

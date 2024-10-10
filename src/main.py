@@ -7,7 +7,7 @@ from GUI.viewport import ViewportLayout
 from GUI.transform_widget import TransformationWidgets
 from GUI.object_viewer import ObjectTableWidget
 from GUI.clipping_widget import LineClippingWidget
-from graphic_obj import GraphicObject
+from base.graphic_obj import GraphicObject
 from utils.formatObject import formatObject
 
 class MainWindow(QMainWindow):
