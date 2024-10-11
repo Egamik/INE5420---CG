@@ -107,8 +107,12 @@ class ViewportLayout(QLabel):
     def getBoundaries(self) -> List[Point2D]:
         """ Get points for top left and bottom right """
         bounds: List[Point2D] = []
-        top_l    =  Point2D(self.x_min, -self.y_min)
-        bottom_r =  Point2D(-self.x_min, self.y_min)
+        update_x = - self.image.width() // 2 + self.x_padding
+        update_y = - self.image.height() // 2 + self.y_padding
+        self.x_min = update_x
+        self.y_min = update_y
+        top_l = Point2D(update_x, -update_y)
+        bottom_r = Point2D(-update_x, update_y)
         print('Get bounds')
         print('x: ', top_l.x, ' y: ', top_l.y)
         print('x: ', bottom_r.x, ' y: ', bottom_r.y)

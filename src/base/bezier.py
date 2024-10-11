@@ -25,23 +25,28 @@ class BezierCurve(GraphicObject):
         self.render_points = []
         n = (len(points) - 4) % 3
         print('Bezier constructor')
-        # if (n != 0)
+        if (n != 0):
+            print("Número inválido de pontos, use f(p) = 4 + 3p, p = numero de pontos")
+            return
         self.curveToLines()
     
     def getPoints(self) -> List[Point3D]:
-        print('Bezier points')
-        for point in self.render_points:
-            print('x: ', point.x, ' y: ', point.y)
         return self.render_points
+    
+    def setPoints(self, points: List[Point3D]):
+        self.render_points = points
+    
+    def getNormalizedPoints(self) -> List[np.matrix]:
+        return list(map(lambda p: np.matrix([p.x, p.y, 1, 1]), self.render_points))
     
     def curveToLines(self):
         for i in range(0, len(self.points) - 3 , 3):
-            pointX = [ [self.points[i].x], 
+            pointX = [ [self.points[i].x  ], 
                        [self.points[i+1].x], 
                        [self.points[i+2].x], 
                        [self.points[i+3].x] 
                     ]
-            pointY = [ [self.points[i].y], 
+            pointY = [ [self.points[i].y  ], 
                        [self.points[i+1].y], 
                        [self.points[i+2].y], 
                        [self.points[i+3].y] 
@@ -56,8 +61,6 @@ class BezierCurve(GraphicObject):
                 x2 = blendingFunction(t+acc, pointX)
                 y2 = blendingFunction(t+acc, pointY)
                 t += acc
-                print('p1: ', x1, '  ', y1)
-                print('p2: ', x2, '  ', y2)
                 self.render_points.append(Point3D(x1, y1, 1))
                 self.render_points.append(Point3D(x2, y2, 1))
         return

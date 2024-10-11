@@ -91,6 +91,7 @@ class TransformationWidgets(QWidget):
         return self.main_layout
 
     def setSelectedObject(self, object: GraphicObject):
+        print('Selected object: ', object.name)
         self.object = object
 
     def onRadioButtonClicked(self, button):
