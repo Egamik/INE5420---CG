@@ -1,5 +1,6 @@
 from typing import List
-from PyQt5.QtWidgets import QDialog, QFormLayout, QDialogButtonBox, QVBoxLayout, QLabel, QSpinBox, QLineEdit
+from PyQt5.QtWidgets import QDialog, QFormLayout, QDialogButtonBox, QVBoxLayout, QLabel, QSpinBox, QLineEdit, QCheckBox
+from base.graphic_obj import GraphicObjectType
 from base.point import Point3D
  
 class AddObjectDialog(QDialog):
@@ -9,29 +10,41 @@ class AddObjectDialog(QDialog):
         self.setGeometry(100, 100, 300, 200)
 
         # Dialog box layout
-        self.layout = QVBoxLayout(self)
+        self.main_layout = QVBoxLayout(self)
 
+        # Curve
+        self.main_layout.addWidget(QLabel("Curve"))
+        self.curve = False
+        is_curve = QCheckBox("Bezier")
+        is_curve.stateChanged.connect(self.curveSelected)
+        self.main_layout.addWidget(is_curve)
+        
         # Input for number of points
-        self.layout.addWidget(QLabel("Number of Points:"))
+        self.main_layout.addWidget(QLabel("Number of Points:"))
         self.num_points_spinbox = QSpinBox(self)
         self.num_points_spinbox.setMinimum(1)  # At least 1 point
         self.num_points_spinbox.valueChanged.connect(self.update_point_inputs)
-        self.layout.addWidget(self.num_points_spinbox)
+        self.main_layout.addWidget(self.num_points_spinbox)
 
         # Placeholder for coordinate input forms
         self.point_inputs_layout = QFormLayout()
-        self.layout.addLayout(self.point_inputs_layout)
+        self.main_layout.addLayout(self.point_inputs_layout)
 
         # Add Ok/Cancel buttons
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
-        self.layout.addWidget(self.button_box)
+        self.main_layout.addWidget(self.button_box)
 
         # Store input fields for the coordinates
         self.point_inputs = []
         self.update_point_inputs()
 
+    def curveSelected(self):
+        print('toggle curve')
+        self.curve = not self.curve
+        self.num_points_spinbox.setMinimum(4)
+        
     def update_point_inputs(self):
         # Clear current input fields
         for i in reversed(range(self.point_inputs_layout.count())):
@@ -66,5 +79,12 @@ class AddObjectDialog(QDialog):
                 pass
         return points
 
-    def getSelectedObjectType(self):
-        return len(self.point_inputs)
+    def getObjectType(self) -> GraphicObjectType:
+        if (self.curve):
+            return GraphicObjectType.BezierCurve
+        if (len(self.point_inputs) == 1):
+            return GraphicObjectType.Point
+        elif(len(self.point_inputs) == 2):
+            return GraphicObjectType.Line
+        else:
+            return GraphicObjectType.Polygon

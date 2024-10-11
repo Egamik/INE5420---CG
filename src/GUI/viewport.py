@@ -3,7 +3,7 @@ from typing import List, Tuple
 from PyQt5.QtGui import QPainter, QColor, QImage, QPen
 from PyQt5.QtWidgets import QLabel
 
-from base.graphic_obj import GraphicObject
+from base.graphic_obj import GraphicObject, GraphicObjectType
 from base.point import Point3D, Point2D
 from utils.clipping import applyClipping
 
@@ -161,9 +161,9 @@ class ViewportLayout(QLabel):
                 p = self.transformToCartesian(point)
                 render_points.append(p)
             
-            print('Clipped points')
-            for f in clipped_points:
-                print('x: ', f.x, ' y: ', f.y)
+            # print('Clipped points')
+            # for f in clipped_points:
+            #     print('x: ', f.x, ' y: ', f.y)
                 
             if len(render_points) == 1:
                 painter.drawPoint(round(render_points[0].x), render_points[0].y)
@@ -173,6 +173,7 @@ class ViewportLayout(QLabel):
                 painter.drawLine(render_points[0].x, render_points[0].y, render_points[1].x, render_points[1].y)
 
             elif len(render_points) >= 3:
+                # Primeiro ponto
                 last_point = render_points[0]
                 for point in render_points[1:]:
                     painter.drawLine(last_point.x, last_point.y, point.x, point.y)

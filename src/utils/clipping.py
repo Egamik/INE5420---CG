@@ -34,11 +34,11 @@ def applyClipping(points: List[Point3D], boundaries: List[Point2D], clip: bool):
             return []
             
     else:
-        print('Clip poli')
+        # print('Clip poli')
         new_points = sutherlandHodman(points, boundaries)
         gambs = []
         for point in new_points:
-            print('x: ', point.x, ' y: ', point.y)
+            # print('x: ', point.x, ' y: ', point.y)
             gambs.append(Point3D(round(point.x), round(point.y), 1))
         return gambs
 
@@ -269,19 +269,19 @@ def sutherlandHodman(polygon: List[Point3D], bounds: List[Point2D]) -> List[Poin
         
         edge_start = boundaries[(i-1) % len(boundaries)]    # Previous boundary edge
         edge_end = boundaries[i]                            # Current boundary edge
-        print('Prev bound: ', edge_start.x, ' ,', edge_start.y)
-        print('Curr bound: ', edge_end.x, ' ,', edge_end.y)
+        # print('Prev bound: ', edge_start.x, ' ,', edge_start.y)
+        # print('Curr bound: ', edge_end.x, ' ,', edge_end.y)
         for j in range(len(next_poli)):
             curr_edge_start = next_poli[(j-1) % len(next_poli)]
             curr_edge_end = next_poli[j]
             
-            print('Prev edge: ', curr_edge_start.x, ' ,', curr_edge_start.y)
-            print('Curr edge: ', curr_edge_end.x , ' ,', curr_edge_end.y)
+            # print('Prev edge: ', curr_edge_start.x, ' ,', curr_edge_start.y)
+            # print('Curr edge: ', curr_edge_end.x , ' ,', curr_edge_end.y)
             
             if isInside(curr_edge_end, edge_start, edge_end, i):
-                print('Edge end inside')
+                # print('Edge end inside')
                 if not isInside(curr_edge_start, edge_start, edge_end, i):
-                    print('Edge start not inside')
+                    # print('Edge start not inside')
                     # Current edge crosses the boundary, add intersection point
                     intersec = getIntersectionPoint([curr_edge_start, curr_edge_end], [Point3D(edge_start.x, edge_start.y, 1), Point3D(edge_end.x, edge_end.y, 1)])
                     if intersec:
@@ -291,7 +291,7 @@ def sutherlandHodman(polygon: List[Point3D], bounds: List[Point2D]) -> List[Poin
             
             elif isInside(curr_edge_start, edge_start, edge_end, i):
                 # Edge crosses the boundary, add intersection point
-                print('Edge crosses boundary')
+                # print('Edge crosses boundary')
                 intersec = getIntersectionPoint([curr_edge_start, curr_edge_end], [Point3D(edge_start.x, edge_start.y, 1), Point3D(edge_end.x, edge_end.y, 1)])
                 if intersec:
                     final_poli.append(Point3D(intersec.x, intersec.y, 1))

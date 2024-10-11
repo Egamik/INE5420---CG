@@ -95,8 +95,11 @@ class MainWindow(QMainWindow):
     def addObject(self):
         dialog = AddObjectDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            print('Add object')
-            obj = formatObject(dialog.getPointData(), self.poli_count)
+            objType = dialog.getObjectType()
+            tp = formatObject(dialog.getPointData(), objType, self.poli_count)
+            # TODO: mudar essa gambiarra horrorosa
+            obj = tp[0]
+            self.poli_count = tp[1]
             self.object_list.addObject(obj)
             self.viewport_layout.addObject(obj)
             self.viewport_layout.drawObjects()

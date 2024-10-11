@@ -8,6 +8,7 @@ class GraphicObjectType(Enum):
     Point = 1
     Line = 2
     Polygon = 3
+    BezierCurve = 4
 
 class GraphicObject():
     def __init__(self, name: str, type: GraphicObjectType, color: QColor):
