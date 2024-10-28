@@ -16,6 +16,10 @@ class Viewport:
         self.width:int = int(width)
         self.height:int = int(height)
         self.objList: List[GraphicObject] = []
+        # View point reference (origin)
+        self.vpr = Point3D()
+        # View rotation angle
+        self.rot_angle = 10
 
     def formatPoints(self, points: List[Point3D]):
         f_points : List[Point3D] = []
@@ -72,12 +76,13 @@ class ViewportLayout(QLabel):
         # Padding
         self.x_padding = 20
         self.y_padding = 20
-        # min
+        # Image's top left
         self.x_min = - self.image.width() // 2 + self.x_padding
         self.y_min = - self.image.height() // 2 + self.y_padding
         
         self.view_w = self.image.width() - (2 * self.x_padding)
         self.view_h = self.image.height() - (2 * self.y_padding)
+        # Window center. 
         self.center_x = self.x_padding + (self.image.width() / 2)
         self.center_y = self.y_padding + (self.image.height() / 2)
         
@@ -131,8 +136,8 @@ class ViewportLayout(QLabel):
         painter.end()
         self.update()  # Repaint
         
-    # Transforms point to use (width/2, heigth/2) as center
-    def transformToCartesian(self, point: Point3D):
+    # Transforms point to fit QImage's coordinates
+    def translateToViewport(self, point: Point3D):
         return Point3D(self.image.width() // 2 + point.x, self.image.height() // 2 - point.y, 1)
 
     def drawBoundingRect(self, painter: QPainter):
@@ -160,10 +165,10 @@ class ViewportLayout(QLabel):
             
             if clipped_points == None:
                 continue
-            
-            for point in clipped_points:
-                p = self.transformToCartesian(point)
-                render_points.append(p)
+            else:
+                for point in clipped_points:
+                    p = self.translateToViewport(point)
+                    render_points.append(p)
             
             # print('Clipped points')
             # for f in clipped_points:

@@ -1,9 +1,7 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout, QComboBox
-from GUI.viewport import Viewport, ViewportLayout
+from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout
 from base.point import Point3D
 from base.graphic_obj import GraphicObject
-from utils.matrix_utils import translate
+from utils.transform_utils import transform
 
 class ControlWidget(QWidget):
     def __init__(self, parent, getSelectedObject, repaintView):
@@ -46,7 +44,7 @@ class ControlWidget(QWidget):
         n_points = obj.getNormalizedPoints()
         t_point = Point3D(0, 10, 0)
         for i in range(len(n_points)):
-            n_points[i] = translate(n_points[i], t_point)
+            n_points[i] = transform(n_points[i], t_point)
 
         updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
         obj.setPoints(updated_points)
@@ -59,7 +57,7 @@ class ControlWidget(QWidget):
         n_points = obj.getNormalizedPoints()
         t_point = Point3D(0, -10, 0)
         for i in range(len(n_points)):
-            n_points[i] = translate(n_points[i], t_point)
+            n_points[i] = transform(n_points[i], t_point)
 
         updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
         obj.setPoints(updated_points)
@@ -72,7 +70,7 @@ class ControlWidget(QWidget):
         n_points = obj.getNormalizedPoints()
         t_point = Point3D(-10, 0, 0)
         for i in range(len(n_points)):
-            n_points[i] = translate(n_points[i], t_point)
+            n_points[i] = transform(n_points[i], t_point)
 
         updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
         obj.setPoints(updated_points)
@@ -85,7 +83,7 @@ class ControlWidget(QWidget):
         n_points = obj.getNormalizedPoints()
         t_point = Point3D(10, 0, 0)
         for i in range(len(n_points)):
-            n_points[i] = translate(n_points[i], t_point)
+            n_points[i] = transform(n_points[i], t_point)
 
         updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
         obj.setPoints(updated_points)

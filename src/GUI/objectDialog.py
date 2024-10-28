@@ -62,18 +62,21 @@ class AddObjectDialog(QDialog):
         for i in range(num_points):
             x_input = QLineEdit(self)
             y_input = QLineEdit(self)
+            z_input = QLineEdit(self)
             self.point_inputs_layout.addRow(f"Point {i + 1} X:", x_input)
             self.point_inputs_layout.addRow(f"Point {i + 1} Y:", y_input)
-            self.point_inputs.append((x_input, y_input))
+            self.point_inputs_layout.addRow(f"Point {i + 1} Z:", z_input)
+            self.point_inputs.append((x_input, y_input, z_input))
 
     def getPointData(self) -> List[Point3D]:
         # Retrieve data from the input fields
         points = []
-        for x_input, y_input in self.point_inputs:
+        for x_input, y_input, z_input in self.point_inputs:
             try:
                 x = int(x_input.text())
                 y = int(y_input.text())
-                points.append(Point3D(x, y, 1))
+                z = int(z_input.text())
+                points.append(Point3D(x, y, z))
             except ValueError:
                 # Handle cases where the input is not a valid number
                 pass

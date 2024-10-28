@@ -2,9 +2,10 @@ from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFormLayout, QRadioButton,
     QLabel, QSpinBox, QPushButton, QButtonGroup, QFrame, QMessageBox
 )
-from GUI.viewport import ViewportLayout
+from base.axis import Axis
 from base.graphic_obj import GraphicObject
-from utils.matrix_utils import getCenterPointMatrix, rotateAroundOrigin, rotateAroundPoint
+from utils.matrix_utils import getCenterPointMatrix
+from utils.transform_utils import rotateAroundOrigin, rotateAroundPoint
 from base.point import Point3D
 
 class TransformationWidgets(QWidget):
@@ -14,15 +15,19 @@ class TransformationWidgets(QWidget):
         # Object to be used in transformations
         self.object: GraphicObject # Has to be initialized before usage
         self.point = Point3D(0, 0, 0)
+        self.axis = Axis.Z
         self.getSelectedObject = getObject
         self.repaintView = repaintView
         
         # Title Label
-        title = QLabel('Rotate Around:')
-        title.setStyleSheet("font-weight: bold; font-size: 16px;")
+        title = QLabel('Transformation Controls')
+        title.setStyleSheet("font-weight: bold; font-size: 16px")
+        rotate_label = QLabel('Rotate Around:')
+        rotate_label.setStyleSheet("font-size: 14px;")
         
         # Layouts
         self.main_layout = QVBoxLayout()
+        self.axis_layout = QHBoxLayout()
         self.radial_layout = QHBoxLayout()
         self.button_layout = QHBoxLayout()
         self.input_layout = QFormLayout()
@@ -30,6 +35,10 @@ class TransformationWidgets(QWidget):
         self.input_frame.setLayout(self.input_layout)
         
         # Radio Buttons
+        self.axis_x = QRadioButton('X')
+        self.axis_y = QRadioButton('Y')
+        self.axis_z = QRadioButton('Z')
+        self.axis_z.setChecked(True)
         self.rotate_zero = QRadioButton('Origin')
         self.rotate_point = QRadioButton('Point')
         self.rotate_center = QRadioButton('Center')
@@ -46,6 +55,17 @@ class TransformationWidgets(QWidget):
         self.radial_layout.addWidget(self.rotate_zero)
         self.radial_layout.addWidget(self.rotate_point)
         self.radial_layout.addWidget(self.rotate_center)
+        
+        # Button Group for axis selection
+        self.axis_group = QButtonGroup()
+        self.axis_group.addButton(self.axis_x)
+        self.axis_group.addButton(self.axis_y)
+        self.axis_group.addButton(self.axis_z)
+        self.axis_group.buttonClicked.connect(self.onAxisClicked)
+        
+        self.axis_layout.addWidget(self.axis_x)
+        self.axis_layout.addWidget(self.axis_y)
+        self.axis_layout.addWidget(self.axis_z)
         
         # Spin Boxes for Point Coordinates
         self.x_input = QSpinBox()
@@ -82,6 +102,8 @@ class TransformationWidgets(QWidget):
         
         # Assemble Main Layout
         self.main_layout.addWidget(title)
+        self.main_layout.addLayout(self.axis_layout)
+        self.main_layout.addWidget(rotate_label)
         self.main_layout.addLayout(self.radial_layout)
         self.main_layout.addWidget(self.input_frame)
         self.main_layout.addLayout(self.button_layout)
@@ -94,6 +116,14 @@ class TransformationWidgets(QWidget):
         print('Selected object: ', object.name)
         self.object = object
 
+    def onAxisClicked(self, button):
+        if button == self.axis_x:
+            self.axis = Axis.X
+        elif button == self.axis_y:
+            self.axis = Axis.Y
+        else:
+            self.axis = Axis.Z  
+        
     def onRadioButtonClicked(self, button):
         """Show or hide spin boxes based on the selected radio button."""
         if button == self.rotate_point:
@@ -143,47 +173,57 @@ class TransformationWidgets(QWidget):
     
     def getPoint(self) -> Point3D:
         """Retrieve the (x, y, z) coordinates from spin boxes."""
+        
         x = self.x_input.value()
         y = self.y_input.value()
         z = self.z_input.value()
+        
         return Point3D(x, y, z)
     
-    # Change for 3D
     def rotateAroundOrigin(self, direction):
+        
         print(f"Rotating around origin to the {direction}.")
         obj: GraphicObject = self.getSelectedObject()
-        normal_matrix = obj.getNormalizedPoints()
-        angle = 10 if (direction == 'left') else -10
+        normal_matrices = obj.getNormalizedPoints()
+        angle = 10 if (direction == 'left') else 350
         
-        for i in range(len(normal_matrix)):
-            normal_matrix[i] = rotateAroundOrigin(normal_matrix[i], angle)
+        for i in range(len(normal_matrices)):
+            normal_matrices[i] = rotateAroundOrigin(normal_matrices[i], angle, self.axis)
             
-        obj.setPoints(list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), normal_matrix)))
+        obj.setPoints(list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), normal_matrices)))
         self.repaintView()
     
     def rotateAroundPoint(self, direction):
-        print(f"Rotating around point {self.point} to the {direction}.")
-        ref_point = Point3D(self.point.x, self.point.y, 0)
-        obj: GraphicObject = self.getSelectedObject()
-        normal_matrix = obj.getNormalizedPoints()
-        angle: int = 10 if (direction == 'left') else -10
         
-        for i in range(len(normal_matrix)):
-            normal_matrix[i] = rotateAroundPoint(normal_matrix[i], angle, ref_point)
+        print(f"Rotating around point {self.point} to the {direction}.")
+        ref_point = Point3D(self.point.x, self.point.y, self.point.z)
+        obj: GraphicObject = self.getSelectedObject()
+        
+        normal_matrices = obj.getNormalizedPoints()
+        
+        angle: int = 10 if (direction == 'left') else 350
+        
+        for i in range(len(normal_matrices)):
+            normal_matrices[i] = rotateAroundPoint(normal_matrices[i], angle, ref_point, self.axis)
             
-        obj.setPoints(list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), normal_matrix)))
+        obj.setPoints(list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), normal_matrices)))
+        
         self.repaintView()
 
     def rotateAroundCenter(self, direction):
+        
         print(f"Rotating around center to the {direction}.")
         obj: GraphicObject = self.getSelectedObject()
-        normal_matrix = obj.getNormalizedPoints()
-        center_point = getCenterPointMatrix(normal_matrix)
-        angle: int = 10 if (direction == 'left') else -10
         
-        for i in range(len(normal_matrix)):
-            normal_matrix[i] = rotateAroundPoint(normal_matrix[i],  angle, center_point)
+        normal_matrices = obj.getNormalizedPoints()
+        center_point = getCenterPointMatrix(normal_matrices)
         
-        obj.setPoints(list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), normal_matrix)))
+        angle: int = 10 if (direction == 'left') else 350
+        
+        for i in range(len(normal_matrices)):
+            normal_matrices[i] = rotateAroundPoint(normal_matrices[i],  angle, center_point, self.axis)
+        
+        obj.setPoints(list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), normal_matrices)))
+        
         self.repaintView()
 

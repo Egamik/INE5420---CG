@@ -2,7 +2,7 @@ import sys
 from typing import List
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGraphicsItem, QListWidget, QGraphicsView, QGraphicsScene, QLabel, QAction
 from GUI.widgets import ControlWidget
-from GUI.dialogs import AddObjectDialog
+from GUI.objectDialog import AddObjectDialog
 from GUI.viewport import ViewportLayout
 from GUI.transform_widget import TransformationWidgets
 from GUI.object_viewer import ObjectTableWidget
@@ -96,16 +96,20 @@ class MainWindow(QMainWindow):
         dialog = AddObjectDialog(self)
         if dialog.exec_() == QDialog.Accepted:
             objType = dialog.getObjectType()
+            
             tp = formatObject(dialog.getPointData(), objType, self.poli_count)
-            # TODO: mudar essa gambiarra horrorosa
             obj = tp[0]
             self.poli_count = tp[1]
+            
             self.object_list.addObject(obj)
             self.viewport_layout.addObject(obj)
             self.viewport_layout.drawObjects()
     
     def removeObject(self):
         print('Remove object')
+        selected = self.object_list.getSelectedObject()
+        self.object_list.removeObject(selected.name)
+        self.viewport_layout.removeObject(selected)
         self.viewport_layout.drawObjects()
         
     def setClip(self, b: bool):
