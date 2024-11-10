@@ -10,6 +10,7 @@ class GraphicObjectType(Enum):
     Polygon = 3
     BezierCurve = 4
     Object3D = 5
+    BSpline = 6
 
 class GraphicObject():
     def __init__(self, name: str, type: GraphicObjectType, color: QColor):
@@ -17,6 +18,8 @@ class GraphicObject():
         self.type: GraphicObjectType = type
         self.color: QColor = color
         self.points: List[Point3D] = None
+        self.render_points: List[Point3D] = None
+        self.normailzedPoints: List[Point2D] = None
 
     # Get object's point list
     def getPoints(self) -> List[Point3D]:
@@ -28,7 +31,8 @@ class GraphicObject():
 
     # Get list of all object's points matrices  
     def getNormalizedPoints(self) -> List[np.matrix]:
-        return list(map(lambda p: np.matrix([p.x, p.y, p.z, 1]), self.points))
+        # return list(map(lambda p: np.matrix([p.x, p.y, p.z, 1]), self.points))
+        return list(map(lambda p: np.matrix([p.x, p.y, 1, 1]), self.normailzedPoints))
         
 class Point(GraphicObject):
     def __init__(self, name: str, color: QColor, point: Point3D):

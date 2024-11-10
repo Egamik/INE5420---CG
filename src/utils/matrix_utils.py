@@ -1,7 +1,6 @@
 import numpy as np
 from typing import List
 from math import sin, cos, radians as rad
-from GUI.viewport import Viewport
 from base.point import Point3D
 from base.axis import Axis
 
@@ -29,6 +28,13 @@ def getScaleMatrix(s: Point3D) -> np.matrix:
         [  0,   0,   0,   1 ]
     ])
 
+def getPerspectiveMatrix(d: int) -> np.matrix:
+    return np.matrix([
+        [  1,   0,   0,   0],
+        [  0,   1,   0,   0],
+        [  0,   0,   1,   0],
+        [  0,   0, 1/d,   0]
+    ])
 
 def getRotationMatrix(r: int, axis: Axis=Axis.Z) -> np.matrix:
   # X Axis

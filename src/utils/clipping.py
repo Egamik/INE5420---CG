@@ -16,21 +16,21 @@ def applyClipping(points: List[Point3D], boundaries: List[Point2D], clip: bool):
         elif points[0].y < boundaries[0].y or points[0].y > boundaries[1].y:
             return []
         else:
-            return points
+            return [Point2D(points[0].x, points[0].y)]
         
     elif len(points) == 2:
         if clip:
             print('Clip line Cohen-Sutherland')
             new_points = cohenSutherland(boundaries, points[0], points[1])
             if len(new_points) != 0:
-                to3d = [Point3D(round(new_points[0].x), round(new_points[0].y), 1), Point3D(round(new_points[1].x), round(new_points[1].y), 1)]
+                to3d = [Point2D(round(new_points[0].x), round(new_points[0].y)), Point2D(round(new_points[1].x), round(new_points[1].y))]
                 return to3d
             return []
         else:
             print('Clip line Liang-Barsky')
             new_points = liangBarsky(boundaries, points[0], points[1])
             if len(new_points) == 2:
-                return [Point3D(round(new_points[0].x), round(new_points[0].y), 1), Point3D(round(new_points[1].x), round(new_points[1].y), 1)]
+                return [Point2D(round(new_points[0].x), round(new_points[0].y)), Point2D(round(new_points[1].x), round(new_points[1].y))]
             return []
             
     else:
@@ -39,7 +39,7 @@ def applyClipping(points: List[Point3D], boundaries: List[Point2D], clip: bool):
         gambs = []
         for point in new_points:
             # print('x: ', point.x, ' y: ', point.y)
-            gambs.append(Point3D(round(point.x), round(point.y), 1))
+            gambs.append(Point2D(round(point.x), round(point.y)))
         return gambs
 
 #TODO: decidir como tratar as coordenadas do QImage

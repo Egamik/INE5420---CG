@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QLabel
 from base.graphic_obj import GraphicObject, GraphicObjectType
 from base.point import Point3D, Point2D
 from utils.clipping import applyClipping
+from utils.transform_utils import transformParallelProjection
 
 class Viewport:
     def __init__(self, x: int, y: int, width: int, height: int):
@@ -16,18 +17,21 @@ class Viewport:
         self.width:int = int(width)
         self.height:int = int(height)
         self.objList: List[GraphicObject] = []
-        # View point reference (origin)
-        self.vpr = Point3D()
+        # View point reference
+        self.vpr = Point3D(0, 0, 100)
         # View rotation angle
-        self.rot_angle = 10
+        self.rot_angle = 0
+        # Origin
+        self.center_of_perspective = Point3D()
+        # Distance from COP to VP = COP.Z - VPR.Z
 
-    def formatPoints(self, points: List[Point3D]):
-        f_points : List[Point3D] = []
-        for point in points:
-            point_x = point[0] + self.x
-            point_y = point[1] + self.y
-            f_points.append(Point3D(point_x, point_y, 1))
-        return f_points
+    # def formatPoints(self, points: List[Point3D]):
+    #     f_points : List[Point3D] = []
+    #     for point in points:
+    #         point_x = point[0] + self.x
+    #         point_y = point[1] + self.y
+    #         f_points.append(Point3D(point_x, point_y, 1))
+    #     return f_points
 
     def addObject(self, obj: GraphicObject):
         self.objList.append(obj)
@@ -157,11 +161,30 @@ class ViewportLayout(QLabel):
         for obj in self.viewport.objList:
             
             points = obj.getPoints()
-            render_points: List[Point3D] = []
-            print('Draw object: ', obj.name, '  color: ', obj.color)
+            render_points: List[Point2D] = []
+            clipped_points: List[Point2D] = None
+            print('Draw object: ', obj.name, ' type: ', obj.type)
             
-            # Transform points
-            clipped_points = applyClipping(points, self.getBoundaries(), self.getClipType())
+            t_points = []
+            if (obj.type == GraphicObjectType.Object3D):
+                # Use first point as reference
+                vpr = obj.edges[1][0]
+                # Transform points
+                for edge in obj.edges:
+                    p1 = edge[0]
+                    p2 = edge[1]
+                    n1 = transformParallelProjection(p1, self.viewport.vpr, self.viewport.rot_angle, self.viewport.rot_angle, self.viewport.rot_angle)
+                    n2 = transformParallelProjection(p2, self.viewport.vpr, self.viewport.rot_angle, self.viewport.rot_angle, self.viewport.rot_angle)
+                    t_points.append(n1)
+                    t_points.append(n2)
+                obj.normailzedPoints = t_points
+            else:
+                for point in points:
+                    n_point = transformParallelProjection(point, self.viewport.vpr, self.viewport.rot_angle, self.viewport.rot_angle, self.viewport.rot_angle)
+                    t_points.append(n_point)
+                obj.normailzedPoints = t_points
+            
+            clipped_points = applyClipping(obj.normailzedPoints, self.getBoundaries(), self.getClipType())
             
             if clipped_points == None:
                 continue

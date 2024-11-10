@@ -4,7 +4,7 @@ from base.graphic_obj import GraphicObject, GraphicObjectType
 from base.point import Point3D, Point2D
 from typing import List
 
-# Coeficientes curva cúbica
+# Cubic curve coeficients
 BEZIER_MATRIX = np.matrix([
     [-1,  3, -3,  1],
     [ 3, -6,  3,  0],
@@ -37,7 +37,7 @@ class BezierCurve(GraphicObject):
         self.render_points = points
     
     def getNormalizedPoints(self) -> List[np.matrix]:
-        return list(map(lambda p: np.matrix([p.x, p.y, 1, 1]), self.render_points))
+        return list(map(lambda p: np.matrix([p.x, p.y, p.z, 1]), self.render_points))
     
     def curveToLines(self):
         for i in range(0, len(self.points) - 3 , 3):

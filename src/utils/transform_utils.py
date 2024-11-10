@@ -1,5 +1,4 @@
 import numpy as np
-from GUI.viewport import Viewport
 from base.axis import Axis
 from base.point import Point3D, Point2D
 from utils.matrix_utils import getRotationMatrix, getTranslationMatrix, multiplyMatrices
@@ -21,21 +20,34 @@ def rotateAroundPoint(matrix: np.matrix, angle: int, point: Point3D, axis: Axis=
     
     return multiplyMatrices([matrix, t_matrix, r_matrix, i_matrix])
 
-def transformParallelProjection(point: Point3D, viewport: Viewport) -> Point2D:
-    point_matrix = np.matrix([point.x, point.y, point.z])
-    vpr = viewport.vpr
+def transformParallelProjection(point: Point3D, vpr: Point3D, r_x:int, r_y:int, r_z:int) -> Point2D:
+    point_matrix = np.matrix([[point.x, point.y, point.z, 1]])
     # Move VRP to origin
     tvpr = getTranslationMatrix(Point3D(-vpr.x, -vpr.y, -vpr.z))
     # Rotate VPN along X
-    rotate_x = getRotationMatrix(viewport.rot_angle, Axis.X)
+    rotate_x = getRotationMatrix(r_x, Axis.X)
     # Rotate VPN along Y
-    rotate_y = getRotationMatrix(viewport.rot_angle, Axis.Y)
+    rotate_y = getRotationMatrix(r_y, Axis.Y)
     # Move VRP back into place
     tvpr_inv = getTranslationMatrix(vpr)
     # Apply all rotations
     result_rotation = multiplyMatrices([tvpr, rotate_x, rotate_y, tvpr_inv])
     # Apply projection
-    result = multiplyMatrices([result_rotation, point_matrix])
+    result = multiplyMatrices([point_matrix, result_rotation])
+    teste= Point2D(result.item(0), result.item(1))
+    return teste
     
-    return Point2D(result.item(0), result.item(1))
+# Viewplane must be parallel to XY plane
+def transformPerspective(point: Point3D, distance: int) -> Point2D:
+    point_matrix = np.matrix([[point.x, point.y, point.z, 1]])
+    # Rotate VPN along X
+    rotate_x = getRotationMatrix(0, Axis.X)
+    # Rotate VPN along Y
+    rotate_y = getRotationMatrix(0, Axis.Y)
+    rot_point = multiplyMatrices([point_matrix, rotate_x, rotate_y])
+    xp = rot_point.item(0)/(rot_point.item(2)/distance)
+    yp = rot_point.item(1)/(rot_point.item(2)/distance)
+    
+    return Point2D(xp, yp)
+    
     

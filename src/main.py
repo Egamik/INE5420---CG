@@ -80,7 +80,6 @@ class MainWindow(QMainWindow):
         menu_bar = self.menuBar()
 
         file_menu = menu_bar.addMenu("Menu")
-        # insert_menu = menu_bar.addMenu("Insert")
 
         save_action = QAction("Save", self)
         open_action = QAction("Open", self)
