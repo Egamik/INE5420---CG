@@ -1,11 +1,14 @@
 from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout
+from GUI.canva import Viewport
 from base.point import Point3D
 from base.graphic_obj import GraphicObject
-from utils.transform_utils import transform
+from utils.transform_utils import normalizePoint, transform
 
 class ControlWidget(QWidget):
-    def __init__(self, parent, getSelectedObject, repaintView):
+    def __init__(self, parent, getSelectedObject, viewport: Viewport,repaintView):
         super().__init__(parent)
+        
+        self.viewport = viewport
 
         self.control_layout = QGridLayout()
         self.getSelectedObject = getSelectedObject
@@ -41,8 +44,10 @@ class ControlWidget(QWidget):
         if (obj == None):
             print('No object selected')
             return
+
         n_points = obj.getNormalizedPoints()
         t_point = Point3D(0, 10, 0)
+
         for i in range(len(n_points)):
             n_points[i] = transform(n_points[i], t_point)
 
@@ -54,8 +59,10 @@ class ControlWidget(QWidget):
         obj: GraphicObject = self.getSelectedObject()
         if (obj == None):
             return
+        
         n_points = obj.getNormalizedPoints()
         t_point = Point3D(0, -10, 0)
+        
         for i in range(len(n_points)):
             n_points[i] = transform(n_points[i], t_point)
 
@@ -67,8 +74,10 @@ class ControlWidget(QWidget):
         obj: GraphicObject = self.getSelectedObject()
         if (obj == None):
             return
+        
         n_points = obj.getNormalizedPoints()
         t_point = Point3D(-10, 0, 0)
+        
         for i in range(len(n_points)):
             n_points[i] = transform(n_points[i], t_point)
 
@@ -80,8 +89,10 @@ class ControlWidget(QWidget):
         obj: GraphicObject = self.getSelectedObject()
         if (obj == None):
             return
+        
         n_points = obj.getNormalizedPoints()
         t_point = Point3D(10, 0, 0)
+        
         for i in range(len(n_points)):
             n_points[i] = transform(n_points[i], t_point)
 

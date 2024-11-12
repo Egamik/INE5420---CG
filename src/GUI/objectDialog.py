@@ -30,6 +30,7 @@ class AddObjectDialog(QDialog):
         is_3D.stateChanged.connect(self.selected3d)
         
         checkboxes.addWidget(is_curve)
+        checkboxes.addWidget(is_spline)
         checkboxes.addWidget(is_3D)
         self.main_layout.addLayout(checkboxes)
         

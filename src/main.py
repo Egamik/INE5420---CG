@@ -3,7 +3,7 @@ from typing import List
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGraphicsItem, QListWidget, QGraphicsView, QGraphicsScene, QLabel, QAction
 from GUI.widgets import ControlWidget
 from GUI.objectDialog import AddObjectDialog
-from GUI.viewport import ViewportLayout
+from GUI.canva import Canva
 from GUI.transform_widget import TransformationWidgets
 from GUI.object_viewer import ObjectTableWidget
 from GUI.clipping_widget import LineClippingWidget
@@ -33,10 +33,10 @@ class MainWindow(QMainWindow):
         left_layout = QVBoxLayout()
         right_layout = QVBoxLayout()
         # GUI components
-        self.viewport_layout = ViewportLayout(self, 720, 450, self.getClipType)
+        self.viewport_layout = Canva(self, 720, 450, self.getClipType)
         self.object_list = ObjectTableWidget(self)
-        self.trans_controls = TransformationWidgets(self, self.object_list.getSelectedObject, self.viewport_layout.drawObjects)
-        self.controls = ControlWidget(self, self.object_list.getSelectedObject, self.viewport_layout.drawObjects)
+        self.trans_controls = TransformationWidgets(self, self.object_list.getSelectedObject, self.viewport_layout.viewport, self.viewport_layout.drawObjects)
+        self.controls = ControlWidget(self, self.object_list.getSelectedObject, self.viewport_layout.viewport, self.viewport_layout.drawObjects)
         self.clip_controls = LineClippingWidget(self.setClip)
         
         control_layout = self.controls.getLayout()

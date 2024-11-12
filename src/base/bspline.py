@@ -32,10 +32,24 @@ class BSpline(GraphicObject):
         super().__init__(name, GraphicObjectType.BSpline, color)
         self.points = points
         self.render_points = []
+        n = (len(points) - 4) % 3
+        print('BSpline constructor')
+        if (n != 0):
+            print("Número inválido de pontos, use f(p) = 4 + 3p, p = numero de pontos")
+            return
+        self.setUpLines()
         
+    def getPoints(self) -> List[Point3D]:
+        return self.render_points
+    
+    def setPoints(self, points: List[Point3D]):
+        self.render_points = points
+    
+    def getNormalizedPoints(self) -> List[np.matrix]:
+        return list(map(lambda p: np.matrix([p.x, p.y, p.z, 1]), self.render_points))
+    
     def setUpLines(self):
-        n_points = len(self.render_points)
-        
+        n_points = len(self.points)
         for i in range(n_points - 3):
             pointX = [ [self.points[i].x  ], 
                        [self.points[i+1].x], 

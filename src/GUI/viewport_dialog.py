@@ -2,10 +2,10 @@ from PyQt5.QtWidgets import (
     QDialog, QTabWidget, QWidget, QFormLayout, QPushButton, QLineEdit
 )
 
-from GUI.viewport import ViewportLayout
+from GUI.canva import Canva
 
 class ViewportDialog(QDialog):
-    def __init__(self, viewport: ViewportLayout) -> None:
+    def __init__(self, viewport: Canva) -> None:
         super().__init__()
         self.viewport = viewport
         self.translations = []

@@ -2,14 +2,15 @@ from PyQt5.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QFormLayout, QRadioButton,
     QLabel, QSpinBox, QPushButton, QButtonGroup, QFrame, QMessageBox
 )
+from GUI.canva import Viewport
 from base.axis import Axis
 from base.graphic_obj import GraphicObject
 from utils.matrix_utils import getCenterPointMatrix
-from utils.transform_utils import rotateAroundOrigin, rotateAroundPoint
+from utils.transform_utils import normalizePoint, rotateAroundOrigin, rotateAroundPoint
 from base.point import Point3D
 
 class TransformationWidgets(QWidget):
-    def __init__(self, parent, getObject, repaintView):
+    def __init__(self, parent, getObject, viewport: Viewport, repaintView):
         super().__init__(parent)
         
         # Object to be used in transformations
@@ -181,8 +182,8 @@ class TransformationWidgets(QWidget):
         return Point3D(x, y, z)
     
     def rotateAroundOrigin(self, direction):
-        
         print(f"Rotating around origin to the {direction}.")
+        
         obj: GraphicObject = self.getSelectedObject()
         normal_matrices = obj.getNormalizedPoints()
         angle = 10 if (direction == 'left') else 350
@@ -194,13 +195,11 @@ class TransformationWidgets(QWidget):
         self.repaintView()
     
     def rotateAroundPoint(self, direction):
-        
         print(f"Rotating around point {self.point} to the {direction}.")
+        
         ref_point = Point3D(self.point.x, self.point.y, self.point.z)
-        obj: GraphicObject = self.getSelectedObject()
-        
+        obj: GraphicObject = self.getSelectedObject()        
         normal_matrices = obj.getNormalizedPoints()
-        
         angle: int = 10 if (direction == 'left') else 350
         
         for i in range(len(normal_matrices)):
@@ -211,13 +210,11 @@ class TransformationWidgets(QWidget):
         self.repaintView()
 
     def rotateAroundCenter(self, direction):
-        
         print(f"Rotating around center to the {direction}.")
         obj: GraphicObject = self.getSelectedObject()
         
         normal_matrices = obj.getNormalizedPoints()
-        center_point = getCenterPointMatrix(normal_matrices)
-        
+        center_point = getCenterPointMatrix(normal_matrices)        
         angle: int = 10 if (direction == 'left') else 350
         
         for i in range(len(normal_matrices)):

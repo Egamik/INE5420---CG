@@ -1,6 +1,9 @@
 import numpy as np
+from math import degrees, atan
+from base.viewport import Viewport
 from base.axis import Axis
 from base.point import Point3D, Point2D
+from base.projection import CameraProjection
 from utils.matrix_utils import getRotationMatrix, getTranslationMatrix, multiplyMatrices
 
 
@@ -20,34 +23,52 @@ def rotateAroundPoint(matrix: np.matrix, angle: int, point: Point3D, axis: Axis=
     
     return multiplyMatrices([matrix, t_matrix, r_matrix, i_matrix])
 
-def transformParallelProjection(point: Point3D, vpr: Point3D, r_x:int, r_y:int, r_z:int) -> Point2D:
-    point_matrix = np.matrix([[point.x, point.y, point.z, 1]])
-    # Move VRP to origin
-    tvpr = getTranslationMatrix(Point3D(-vpr.x, -vpr.y, -vpr.z))
-    # Rotate VPN along X
-    rotate_x = getRotationMatrix(r_x, Axis.X)
-    # Rotate VPN along Y
-    rotate_y = getRotationMatrix(r_y, Axis.Y)
-    # Move VRP back into place
-    tvpr_inv = getTranslationMatrix(vpr)
-    # Apply all rotations
-    result_rotation = multiplyMatrices([tvpr, rotate_x, rotate_y, tvpr_inv])
-    # Apply projection
-    result = multiplyMatrices([point_matrix, result_rotation])
-    teste= Point2D(result.item(0), result.item(1))
-    return teste
+def normalizePoint(point: Point3D, viewport: Viewport) -> Point2D:
+    if (viewport.projection_type == CameraProjection.PARALLEL):
+        n_point = transformParallelProjection(point, viewport)
+    else:
+        n_point = transformPerspectiveProjection(point, viewport)
+    
+    mat = rotateAroundPoint(n_point, -viewport.transformations.rotation.z, viewport.transformations.position)
+    return Point2D(mat.item(0), mat.item(1))
+
+def transformParallelProjection(point: Point3D, viewport: Viewport) -> Point2D:
+    #!!!!!!
+    return applyViewRotationMatrix(point, viewport.transformations.position, viewport)
     
 # Viewplane must be parallel to XY plane
-def transformPerspective(point: Point3D, distance: int) -> Point2D:
-    point_matrix = np.matrix([[point.x, point.y, point.z, 1]])
-    # Rotate VPN along X
-    rotate_x = getRotationMatrix(0, Axis.X)
-    # Rotate VPN along Y
-    rotate_y = getRotationMatrix(0, Axis.Y)
-    rot_point = multiplyMatrices([point_matrix, rotate_x, rotate_y])
-    xp = rot_point.item(0)/(rot_point.item(2)/distance)
-    yp = rot_point.item(1)/(rot_point.item(2)/distance)
+def transformPerspectiveProjection(point: Point3D, viewport: Viewport) -> Point2D:
+    mat = applyViewRotationMatrix(point, viewport.focus_point, viewport)
     
-    return Point2D(xp, yp)
+    # f = window.camera.position.z
+    f = 100
+    perspectiveMatrix = np.matrix([
+        [1,   0,   0,   0],
+        [0,   1,   0,   0],
+        [0,   0,   1,   0],
+        [0,   0, 1/f,   0]
+    ])
     
+    return multiplyMatrices([mat, perspectiveMatrix])
+    
+def applyViewRotationMatrix(point: Point3D, focus: Point3D, viewport: Viewport):
+    mat = np.matrix([point.x, point.y, point.z, 1])
+    
+    focus_mat = getTranslationMatrix(focus)
+    focus_tmat = getTranslationMatrix(Point3D(-focus.x, -focus.y, -focus.z))
+    vpn = Point3D()
+    rotation_x = 0
+    rotation_y = 0
+    
+    if (vpn.z != 0):
+        rotation_x = degrees(atan(vpn.y / vpn.z))
+        rotation_y = degrees(atan(vpn.x / vpn.z))
+    
+    # - window.rotation
+    rx_mat = getRotationMatrix(rotation_x, Axis.X)
+    ry_mat = getRotationMatrix(rotation_y, Axis.Y)
+    
+    vpn_rotation_mat = multiplyMatrices([focus_tmat, rx_mat, ry_mat, focus_mat])
+    
+    return multiplyMatrices([mat, vpn_rotation_mat])
     

@@ -31,7 +31,7 @@ class GraphicObject():
 
     # Get list of all object's points matrices  
     def getNormalizedPoints(self) -> List[np.matrix]:
-        # return list(map(lambda p: np.matrix([p.x, p.y, p.z, 1]), self.points))
+        """Returns list of matrices. Each matrix is a normalized point"""
         return list(map(lambda p: np.matrix([p.x, p.y, 1, 1]), self.normailzedPoints))
         
 class Point(GraphicObject):

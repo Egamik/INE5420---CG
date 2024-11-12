@@ -13,9 +13,9 @@ def formatObject(points: List, type: GraphicObjectType, count: int) -> Tuple[Gra
     elif (type == GraphicObjectType.Object3D):
         return (Object3D("3Dobject" + str(count), points, QColor("black")), count)
     
-    elif (type == GraphicObject.BSpline):
+    elif (type == GraphicObjectType.BSpline):
         # TODO: FInish contrutor
-        return (BSpline("bspline" +str(count), QColor("black")), count)
+        return (BSpline("bspline" +str(count), QColor("black"), points), count)
     
     if len(points) == 1:
         return (Point("point " + str(count), QColor("black"), points[0]), count)
