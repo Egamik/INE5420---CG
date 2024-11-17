@@ -1,4 +1,5 @@
 from typing import List
+from math import radians as rad, tan
 
 from PyQt5.QtGui import QPainter, QColor, QImage, QPen
 from PyQt5.QtWidgets import QLabel
@@ -23,14 +24,19 @@ class Canva(QLabel):
         # Image's top left
         self.x_min = - self.image.width() // 2 + self.x_padding
         self.y_min = - self.image.height() // 2 + self.y_padding
-        
         self.view_w = self.image.width() - (2 * self.x_padding)
         self.view_h = self.image.height() - (2 * self.y_padding)
         # Window center. 
         self.center_x = self.x_padding + (self.image.width() / 2)
         self.center_y = self.y_padding + (self.image.height() / 2)
         
+        # Projection data
+        self.focal_angle = 20
+        self.focal_distance = 100
+        # Set up focal point for perspective projection
         self.viewport = Viewport(int(self.view_w / 2), int(self.view_h / 2), self.view_w, self.view_h)
+        cameraPosition = Point3D(self.viewport.transformations.position.x, self.viewport.transformations.position.y - (tan(rad(self.focal_angle)) * self.focal_distance), self.viewport.transformations.position.z + self.focal_distance)
+        self.viewport.transformations.position = cameraPosition
         
         painter = QPainter(self.image)
         self.drawBoundingRect(painter)

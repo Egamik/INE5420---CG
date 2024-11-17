@@ -5,7 +5,7 @@ from base.graphic_obj import GraphicObject
 from utils.transform_utils import normalizePoint, transform
 
 class ControlWidget(QWidget):
-    def __init__(self, parent, getSelectedObject, viewport: Viewport,repaintView):
+    def __init__(self, parent, getSelectedObject, viewport: Viewport, repaintView):
         super().__init__(parent)
         
         self.viewport = viewport

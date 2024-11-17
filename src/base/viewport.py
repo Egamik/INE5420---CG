@@ -11,12 +11,12 @@ class Viewport:
                 y: int,
                 width: int,
                 height: int,
-                projection: CameraProjection=CameraProjection.PARALLEL
+                projection: CameraProjection = CameraProjection.PARALLEL
     ):
         # View center
         self.x:int = int(x)
         self.y:int = int(y)
-        
+        # Viewport transformation and projection data
         self.focus_point = Point3D()
         self.projection_type = projection
         self.transformations = Transform()
@@ -24,13 +24,6 @@ class Viewport:
         self.width:int = int(width)
         self.height:int = int(height)
         self.objList: List[GraphicObject] = []
-        # View point reference
-        # self.vpr = Point3D(0, 0, 100)
-        # View rotation angle
-        self.rot_angle = 0
-        # Origin
-        self.center_of_perspective = Point3D()
-        # Distance from COP to VP = COP.Z - VPR.Z
 
     def addObject(self, obj: GraphicObject):
         self.objList.append(obj)
@@ -65,3 +58,6 @@ class Viewport:
 
     def clear(self):
         self.objList.clear()
+        
+    def setProjectionType(self, projection: CameraProjection):
+        self.projection_type = projection

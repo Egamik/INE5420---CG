@@ -33,7 +33,6 @@ def normalizePoint(point: Point3D, viewport: Viewport) -> Point2D:
     return Point2D(mat.item(0), mat.item(1))
 
 def transformParallelProjection(point: Point3D, viewport: Viewport) -> Point2D:
-    #!!!!!!
     return applyViewRotationMatrix(point, viewport.transformations.position, viewport)
     
 # Viewplane must be parallel to XY plane
@@ -56,7 +55,8 @@ def applyViewRotationMatrix(point: Point3D, focus: Point3D, viewport: Viewport):
     
     focus_mat = getTranslationMatrix(focus)
     focus_tmat = getTranslationMatrix(Point3D(-focus.x, -focus.y, -focus.z))
-    vpn = Point3D()
+    vpr = viewport.transformations.position
+    vpn = Point3D(vpr.x - focus.x, vpr.y - focus.y, vpr.z - focus.z)
     rotation_x = 0
     rotation_y = 0
     
