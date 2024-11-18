@@ -24,23 +24,28 @@ def rotateAroundPoint(matrix: np.matrix, angle: int, point: Point3D, axis: Axis=
     return multiplyMatrices([matrix, t_matrix, r_matrix, i_matrix])
 
 def normalizePoint(point: Point3D, viewport: Viewport) -> Point2D:
+    print("\n Normalize point (", point.x, ",", point.y, ",", point.z, ")")
+    
     if (viewport.projection_type == CameraProjection.PARALLEL):
         n_point = transformParallelProjection(point, viewport)
+    
     else:
         n_point = transformPerspectiveProjection(point, viewport)
     
     mat = rotateAroundPoint(n_point, -viewport.transformations.rotation.z, viewport.transformations.position)
+    
+    print("\n Normalized point (", mat.item(0), ",", mat.item(1), ")")
     return Point2D(mat.item(0), mat.item(1))
+
 
 def transformParallelProjection(point: Point3D, viewport: Viewport) -> Point2D:
     return applyViewRotationMatrix(point, viewport.transformations.position, viewport)
     
-# Viewplane must be parallel to XY plane
 def transformPerspectiveProjection(point: Point3D, viewport: Viewport) -> Point2D:
-    mat = applyViewRotationMatrix(point, viewport.focus_point, viewport)
+    mat = applyViewRotationMatrix(point, viewport.transformations.position, viewport)
     
-    # f = window.camera.position.z
-    f = 100
+    f = viewport.camera_position.z
+    
     perspectiveMatrix = np.matrix([
         [1,   0,   0,   0],
         [0,   1,   0,   0],
@@ -55,8 +60,10 @@ def applyViewRotationMatrix(point: Point3D, focus: Point3D, viewport: Viewport):
     
     focus_mat = getTranslationMatrix(focus)
     focus_tmat = getTranslationMatrix(Point3D(-focus.x, -focus.y, -focus.z))
+    
     vpr = viewport.transformations.position
     vpn = Point3D(vpr.x - focus.x, vpr.y - focus.y, vpr.z - focus.z)
+    
     rotation_x = 0
     rotation_y = 0
     

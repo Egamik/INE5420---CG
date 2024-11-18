@@ -63,16 +63,12 @@ def getRegionCode(point: Point3D, minBound: Point2D, maxBound: Point2D):
 
 def cohenSutherland(bounds: List[Point2D], start_point: Point3D, end_point: Point3D) -> List[Point2D]:
     """ Algoritmo Cohen-Sutherland para clipping de linhas """
-    # x_min = bounds[0].x
-    # y_min = bounds[1].y
-    # x_max = bounds[1].x
-    # y_max = bounds[0].y
     p_min = Point2D(bounds[0].x, bounds[1].y)
     p_max = Point2D(bounds[1].x, bounds[0].y)
-    print('pmin: ', p_min.x, '  ', p_min.y)
-    print('pmax: ', p_max.x, '  ', p_max.y)
-    print('start: ', start_point.x, ' ', start_point.y)
-    print('end: ', end_point.x, ' ', end_point.y)
+    # print('pmin: ', p_min.x, '  ', p_min.y)
+    # print('pmax: ', p_max.x, '  ', p_max.y)
+    # print('start: ', start_point.x, ' ', start_point.y)
+    # print('end: ', end_point.x, ' ', end_point.y)
     
     new_start = start_point
     new_end = end_point
@@ -80,7 +76,7 @@ def cohenSutherland(bounds: List[Point2D], start_point: Point3D, end_point: Poin
     end_rc: int = getRegionCode(end_point, p_min, p_max)
 
     while True:
-        print('CohenSutherland s_rc: ', start_rc, '\te_rc: ', end_rc)
+        # print('CohenSutherland s_rc: ', start_rc, '\te_rc: ', end_rc)
         if start_rc == 0 and end_rc == 0:
             return [new_start, new_end]
         

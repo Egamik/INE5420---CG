@@ -21,9 +21,12 @@ class Canva(QLabel):
         # Padding
         self.x_padding = 20
         self.y_padding = 20
-        # QImage's translation coordinates
-        self.x_min = - self.image.width() // 2 + self.x_padding
-        self.y_min = - self.image.height() // 2 + self.y_padding
+        # QImage's coordinates
+        self.x_min = self.x_padding
+        self.y_min = self.image.height() - self.y_padding
+        self.x_max = self.image.width() - self.x_padding
+        self.y_max = self.y_padding
+        # View width and height
         self.view_w = self.image.width() - (2 * self.x_padding)
         self.view_h = self.image.height() - (2 * self.y_padding)
         # Window center. 
@@ -36,7 +39,7 @@ class Canva(QLabel):
         # Set up focal point for perspective projection
         self.viewport = Viewport(0, 0, self.view_w, self.view_h)
         cameraPosition = Point3D(self.viewport.transformations.position.x, self.viewport.transformations.position.y - (tan(rad(self.focal_angle)) * self.focal_distance), self.viewport.transformations.position.z + self.focal_distance)
-        self.viewport.transformations.position = cameraPosition
+        self.viewport.camera_position = cameraPosition
         
         painter = QPainter(self.image)
         self.drawBoundingRect(painter)
@@ -66,17 +69,17 @@ class Canva(QLabel):
     
     # Returns boundary points clockwise
     def getBoundaries(self) -> List[Point2D]:
-        """ Get points for top left and bottom right """
+        """ Get points for top left and bottom right in cartesian coordiantes. """
         bounds: List[Point2D] = []
         update_x = - self.image.width() // 2 + self.x_padding
         update_y = - self.image.height() // 2 + self.y_padding
-        self.x_min = update_x
-        self.y_min = update_y
+        self.center_x = update_x
+        self.center_y = update_y
         top_l = Point2D(update_x, -update_y)
         bottom_r = Point2D(-update_x, update_y)
-        print('Get bounds')
-        print('x: ', top_l.x, ' y: ', top_l.y)
-        print('x: ', bottom_r.x, ' y: ', bottom_r.y)
+        print('Get bounds. Cartesian coordinates')
+        print('x_left: ', top_l.x, ' y_left: ', top_l.y)
+        print('x_right: ', bottom_r.x, ' y_right: ', bottom_r.y)
         bounds.append(top_l)
         bounds.append(bottom_r)
         return bounds
@@ -93,8 +96,25 @@ class Canva(QLabel):
         self.update()  # Repaint
         
     # Transforms point from Cartesian to QImage's coordinates
-    def translateToViewport(self, point: Point3D):
-        return Point2D(self.image.width() // 2 + point.x, self.image.height() // 2 - point.y)
+    def transformToCanva(self, point: Point3D) -> Point2D:
+        x_wmin, y_wmin, x_wmax, y_wmax = (self.x_min, self.y_min, self.x_max, self.y_max)
+        x_vmin, y_vmin, x_vmax, y_vmax = (
+            self.viewport.x_min,
+            self.viewport.y_min,
+            self.viewport.x_max,
+            self.viewport.y_max
+        )
+        
+        xN = (point.x - x_vmin) / (x_vmax - x_vmin)
+        yN = (point.y - y_vmin) / (y_vmax - y_vmin)
+        
+        xW = xN * (x_wmax - x_wmin) + x_wmin
+        yW = yN * (y_wmax - y_wmin) + y_wmin
+        
+        print('Canva::TransformToCanva input X: ', point.x, ' Y: ', point.y)
+        print('Canva::TransformToCanva output X: ', xW, ' Y: ', yW)
+        
+        return Point2D(int(xW), int(yW))
 
     def drawBoundingRect(self, painter: QPainter):
         rect_x = self.image.width() - 2 * self.x_padding
@@ -138,14 +158,14 @@ class Canva(QLabel):
                     t_points.append(n_point)
                 obj.normailzedPoints = t_points
             
-            print('Object points normalized')
             clipped_points = applyClipping(obj.normailzedPoints, self.getBoundaries(), self.getClipType())
             
             if clipped_points == None:
                 continue
             else:
                 for point in clipped_points:
-                    p = self.translateToViewport(point)
+                    p = self.transformToCanva(point)
+                    print('Canva coordinates. X: ', p.x, ' Y: ', p.y)
                     render_points.append(p)
             
             # print('Clipped points')
@@ -187,6 +207,7 @@ class Canva(QLabel):
         # Adjust the viewport size accordingly
         self.viewport.width = new_width - (2 * self.x_padding)
         self.viewport.height = new_height - (2 * self.y_padding)
+        self.viewport.updateBounds()
         # print(f"Resized: image to {new_width}x{new_height}, viewport to {self.viewport.width}x{self.viewport.height}")
         self.drawObjects()
 

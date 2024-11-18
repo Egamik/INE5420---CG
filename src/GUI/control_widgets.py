@@ -20,8 +20,8 @@ class ControlWidget(QWidget):
         self.is_vp_trans = False
         self.vp_trans_radio = QRadioButton("Viewport")
         self.obj_trans_radio = QRadioButton("Object")
-        self.vp_trans_radio.toggled.connect(self.setTransType(True))
-        self.obj_trans_radio.toggled.connect(self.setTransType(False))
+        self.vp_trans_radio.toggled.connect(lambda: self.setTransType(True))
+        self.obj_trans_radio.toggled.connect(lambda: self.setTransType(False))
         self.radio_layout.addWidget(self.vp_trans_radio)
         self.radio_layout.addWidget(self.obj_trans_radio)
         
@@ -33,8 +33,8 @@ class ControlWidget(QWidget):
         self.left_button = QPushButton("←")
         self.right_button = QPushButton("→")
         
-        # self.zoomin_button.clicked.connect(zoom_in)
-        # self.zoomout_button.clicked.connect(zoom_out)
+        self.zoomin_button.clicked.connect(lambda: self.onZoom(100))
+        self.zoomout_button.clicked.connect(lambda: self.onZoom(-100))
         self.up_button.clicked.connect(self.onUp)
         self.down_button.clicked.connect(self.onDown)
         self.left_button.clicked.connect(self.onLeft)
@@ -72,8 +72,9 @@ class ControlWidget(QWidget):
 
             updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
             obj.setPoints(updated_points)
-        # else:
-        #     self.viewport.
+        else:
+            self.viewport.pan(0, 100)
+            # Repaint
         self.repaintView()
     
     def onDown(self):
@@ -88,8 +89,10 @@ class ControlWidget(QWidget):
             for i in range(len(n_points)):
                 n_points[i] = transform(n_points[i], t_point)
 
-            updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
+            updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), n_points))
             obj.setPoints(updated_points)
+        else:
+            self.viewport.pan(0, -100)
         self.repaintView()
         
     def onLeft(self):
@@ -104,8 +107,10 @@ class ControlWidget(QWidget):
             for i in range(len(n_points)):
                 n_points[i] = transform(n_points[i], t_point)
 
-            updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
+            updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), n_points))
             obj.setPoints(updated_points)
+        else:
+            self.viewport.pan(-100, 0)
         self.repaintView()
         
     def onRight(self):
@@ -120,6 +125,13 @@ class ControlWidget(QWidget):
             for i in range(len(n_points)):
                 n_points[i] = transform(n_points[i], t_point)
 
-            updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
+            updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), n_points))
             obj.setPoints(updated_points)
+        else:
+            self.viewport.pan(100, 0)
+        self.repaintView()
+    
+    def onZoom(self, value):
+        print('Zoom: %f', value)
+        self.viewport.zoom(value)
         self.repaintView()

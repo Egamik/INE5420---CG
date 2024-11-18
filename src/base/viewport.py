@@ -1,4 +1,5 @@
 from typing import List
+from base.axis import Axis
 from base.point import Point3D
 from base.graphic_obj import GraphicObject
 from base.projection import CameraProjection
@@ -16,14 +17,21 @@ class Viewport:
         # View center cartesian
         self.x:int = int(x)
         self.y:int = int(y)
+        # Canva dimensions
+        self.width:int = int(width)
+        self.height:int = int(height)
+        # View bounds cartesian
+        self.x_min = - self.width / 2
+        self.y_min = - self.height / 2
+        self.x_max = self.width / 2
+        self.y_max = self.height / 2
         # Viewport transformation and projection data
         self.focus_point = Point3D()
         self.projection_type = projection
         self.transformations = Transform()
-        # Canva dimensions
-        self.width:int = int(width)
-        self.height:int = int(height)
         self.objList: List[GraphicObject] = []
+        # gambiarra
+        self.camera_position = Point3D()
 
     def addObject(self, obj: GraphicObject):
         self.objList.append(obj)
@@ -31,6 +39,12 @@ class Viewport:
     def removeObject(self, obj: GraphicObject):
         self.objList.remove(obj)
 
+    def updateBounds(self):
+        self.x_min = - self.width / 2
+        self.y_min = - self.height / 2
+        self.x_max = self.width / 2
+        self.y_max = self.height / 2
+        
     def getObjectList(self):
         return self.objList
     
@@ -38,12 +52,34 @@ class Viewport:
         self.objList = objects
 
     def pan(self, pan_x: int, pan_y: int):
-        self.x += pan_x
-        self.y += pan_y
+        self.transformations.position.x += pan_x
+        self.transformations.position.y += pan_y
     
     def zoom(self, value: float):
-        # self.
-        pass
+        self.x_min += value
+        self.y_min += value
+        self.x_max -= value
+        self.y_max -= value
+        
+    def rotate(self, angle: float, axis: Axis):
+        rotation = self.transformations.rotation
+        if axis == Axis.X:
+            rotation.x = (rotation.x + angle) % 360
+            if rotation.x < 0:
+                rotation += 360
+                
+        elif axis == Axis.Y:
+            rotation.y = (rotation.y + angle) % 360
+            if rotation.y < 0:
+                rotation.y += 360
+        
+        elif axis == Axis.Z:
+            rotation.z = (rotation.z + angle) % 360
+            if rotation.z < 0:
+                rotation.z += 360
+        
+        self.transformations.rotation =rotation
+        
 
     def clear(self):
         self.objList.clear()
