@@ -21,7 +21,7 @@ class Canva(QLabel):
         # Padding
         self.x_padding = 20
         self.y_padding = 20
-        # Image's top left
+        # QImage's translation coordinates
         self.x_min = - self.image.width() // 2 + self.x_padding
         self.y_min = - self.image.height() // 2 + self.y_padding
         self.view_w = self.image.width() - (2 * self.x_padding)
@@ -34,7 +34,7 @@ class Canva(QLabel):
         self.focal_angle = 20
         self.focal_distance = 100
         # Set up focal point for perspective projection
-        self.viewport = Viewport(int(self.view_w / 2), int(self.view_h / 2), self.view_w, self.view_h)
+        self.viewport = Viewport(0, 0, self.view_w, self.view_h)
         cameraPosition = Point3D(self.viewport.transformations.position.x, self.viewport.transformations.position.y - (tan(rad(self.focal_angle)) * self.focal_distance), self.viewport.transformations.position.z + self.focal_distance)
         self.viewport.transformations.position = cameraPosition
         
@@ -43,20 +43,26 @@ class Canva(QLabel):
         painter.end()
         self.update()
 
+        
     def addObject(self, object: GraphicObject):
         self.viewport.addObject(object)
 
     def removeObject(self, object: GraphicObject):
         self.viewport.removeObject(object)
 
-    def addToPoints(self, x: int, y: int):
-        self.viewport.addToPoints(x, y)
-
     def getObjectList(self):
         return self.viewport.getObjectList()
     
     def setObjectList(self, obj_list: List[GraphicObject]):
         self.viewport.setObjectList(obj_list)
+    
+    def onPan(self, x: int, y: int):
+        self.viewport.transformations.position.x += x
+        self.viewport.transformations.position.y += y
+        return
+    
+    def onZoom(self, value: float):
+        self.viewport.transformations.scale += value
     
     # Returns boundary points clockwise
     def getBoundaries(self) -> List[Point2D]:
@@ -86,7 +92,7 @@ class Canva(QLabel):
         painter.end()
         self.update()  # Repaint
         
-    # Transforms point to fit QImage's coordinates
+    # Transforms point from Cartesian to QImage's coordinates
     def translateToViewport(self, point: Point3D):
         return Point2D(self.image.width() // 2 + point.x, self.image.height() // 2 - point.y)
 
@@ -97,7 +103,7 @@ class Canva(QLabel):
 
     def drawObjects(self):
         """ Redraw the objects after clearing or updating the canvas """
-        print('Viewport::drawObjects')
+        print('Canva::drawObjects')
         self.image.fill(QColor("white"))  # Clear the image before drawing
         painter = QPainter(self.image)  # Use QPainter to draw on the QImage
         painter.setPen(QPen(QColor("black")))  # Set pen color for drawing

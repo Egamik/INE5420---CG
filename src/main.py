@@ -1,7 +1,7 @@
 import sys
 from typing import List
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGraphicsItem, QListWidget, QGraphicsView, QGraphicsScene, QLabel, QAction
-from GUI.widgets import ControlWidget
+from GUI.control_widgets import ControlWidget
 from GUI.objectDialog import AddObjectDialog
 from GUI.canva import Canva
 from GUI.transform_widget import TransformationWidgets

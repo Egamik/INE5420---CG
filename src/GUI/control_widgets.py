@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout
+from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout, QHBoxLayout, QVBoxLayout, QRadioButton
 from GUI.canva import Viewport
 from base.point import Point3D
 from base.graphic_obj import GraphicObject
@@ -10,10 +10,21 @@ class ControlWidget(QWidget):
         
         self.viewport = viewport
 
+        self.main_layout = QVBoxLayout()
         self.control_layout = QGridLayout()
+        self.radio_layout = QHBoxLayout()
         self.getSelectedObject = getSelectedObject
         self.repaintView = repaintView
 
+        # Transformation selection
+        self.is_vp_trans = False
+        self.vp_trans_radio = QRadioButton("Viewport")
+        self.obj_trans_radio = QRadioButton("Object")
+        self.vp_trans_radio.toggled.connect(self.setTransType(True))
+        self.obj_trans_radio.toggled.connect(self.setTransType(False))
+        self.radio_layout.addWidget(self.vp_trans_radio)
+        self.radio_layout.addWidget(self.obj_trans_radio)
+        
         # Control buttons
         self.zoomin_button = QPushButton("+🔍")
         self.zoomout_button = QPushButton("-🔍")
@@ -35,67 +46,80 @@ class ControlWidget(QWidget):
         self.control_layout.addWidget(self.down_button, 3, 1)
         self.control_layout.addWidget(self.left_button, 2, 0)
         self.control_layout.addWidget(self.right_button, 2, 2)
+        
+        self.main_layout.addLayout(self.radio_layout)
+        self.main_layout.addLayout(self.control_layout)
     
     def getLayout(self):
-        return self.control_layout
+        return self.main_layout
 
+    def setTransType(self, type: bool):
+        self.is_vp_trans = type
+            
+        
     def onUp(self):
-        obj: GraphicObject = self.getSelectedObject()
-        if (obj == None):
-            print('No object selected')
-            return
+        if not self.is_vp_trans:
+            obj: GraphicObject = self.getSelectedObject()
+            if (obj == None):
+                print('No object selected')
+                return
 
-        n_points = obj.getNormalizedPoints()
-        t_point = Point3D(0, 10, 0)
+            n_points = obj.getNormalizedPoints()
+            t_point = Point3D(0, 10, 0)
 
-        for i in range(len(n_points)):
-            n_points[i] = transform(n_points[i], t_point)
+            for i in range(len(n_points)):
+                n_points[i] = transform(n_points[i], t_point)
 
-        updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
-        obj.setPoints(updated_points)
+            updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
+            obj.setPoints(updated_points)
+        # else:
+        #     self.viewport.
         self.repaintView()
     
     def onDown(self):
-        obj: GraphicObject = self.getSelectedObject()
-        if (obj == None):
-            return
-        
-        n_points = obj.getNormalizedPoints()
-        t_point = Point3D(0, -10, 0)
-        
-        for i in range(len(n_points)):
-            n_points[i] = transform(n_points[i], t_point)
+        if not self.is_vp_trans:
+            obj: GraphicObject = self.getSelectedObject()
+            if (obj == None):
+                return
+            
+            n_points = obj.getNormalizedPoints()
+            t_point = Point3D(0, -10, 0)
+            
+            for i in range(len(n_points)):
+                n_points[i] = transform(n_points[i], t_point)
 
-        updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
-        obj.setPoints(updated_points)
+            updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
+            obj.setPoints(updated_points)
         self.repaintView()
         
     def onLeft(self):
-        obj: GraphicObject = self.getSelectedObject()
-        if (obj == None):
-            return
-        
-        n_points = obj.getNormalizedPoints()
-        t_point = Point3D(-10, 0, 0)
-        
-        for i in range(len(n_points)):
-            n_points[i] = transform(n_points[i], t_point)
+        if not self.is_vp_trans:
+            obj: GraphicObject = self.getSelectedObject()
+            if (obj == None):
+                return
+            
+            n_points = obj.getNormalizedPoints()
+            t_point = Point3D(-10, 0, 0)
+            
+            for i in range(len(n_points)):
+                n_points[i] = transform(n_points[i], t_point)
 
-        updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
-        obj.setPoints(updated_points)
+            updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
+            obj.setPoints(updated_points)
         self.repaintView()
         
     def onRight(self):
-        obj: GraphicObject = self.getSelectedObject()
-        if (obj == None):
-            return
-        
-        n_points = obj.getNormalizedPoints()
-        t_point = Point3D(10, 0, 0)
-        
-        for i in range(len(n_points)):
-            n_points[i] = transform(n_points[i], t_point)
+        if not self.is_vp_trans:
+            obj: GraphicObject = self.getSelectedObject()
+            if (obj == None):
+                return
+            
+            n_points = obj.getNormalizedPoints()
+            t_point = Point3D(10, 0, 0)
+            
+            for i in range(len(n_points)):
+                n_points[i] = transform(n_points[i], t_point)
 
-        updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
-        obj.setPoints(updated_points)
+            updated_points = list(map(lambda x: Point3D(x.item(0), x.item(1), 1), n_points))
+            obj.setPoints(updated_points)
         self.repaintView()

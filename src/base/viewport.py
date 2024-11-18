@@ -13,7 +13,7 @@ class Viewport:
                 height: int,
                 projection: CameraProjection = CameraProjection.PARALLEL
     ):
-        # View center
+        # View center cartesian
         self.x:int = int(x)
         self.y:int = int(y)
         # Viewport transformation and projection data
@@ -37,24 +37,13 @@ class Viewport:
     def setObjectList(self, objects: List[GraphicObject]):
         self.objList = objects
 
-    def addToPoints(self, x: int, y: int):
-        for obj in self.objList:
-            updated_pts = []
-            for point in obj.getPoints():
-                new_point = Point3D(point.x + x, point.y + y, point.z)
-                updated_pts.append(new_point)
-            obj.setPoints(updated_pts)
-
-    def multPoints(self, x: int, y: int):
-        for obj in self.objList:
-            updated_pts = []
-            for point in obj.getPoints():
-                point_l = list(point)
-                point_l[0] = point_l[0] * x
-                point_l[1] = point_l[1] * y
-                point = tuple(point_l)
-                updated_pts.append(point)
-            obj.setPoints(updated_pts)
+    def pan(self, pan_x: int, pan_y: int):
+        self.x += pan_x
+        self.y += pan_y
+    
+    def zoom(self, value: float):
+        # self.
+        pass
 
     def clear(self):
         self.objList.clear()
