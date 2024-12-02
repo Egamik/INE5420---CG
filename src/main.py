@@ -25,8 +25,8 @@ class MainWindow(QMainWindow):
 		# Attributes
 		self.poli_count: int = 0
 		self.poli_list: List[GraphicObject] = []
-		self.pan_scale: int = 50
-		self.zoom_scale: float = 0.2
+		# self.pan_scale: int = 50
+		# self.zoom_scale: float = 0.2
 		self.toggle_clip = True
 
 		# Create Menu bar

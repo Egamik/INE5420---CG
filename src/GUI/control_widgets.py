@@ -66,7 +66,7 @@ class ControlWidget(QWidget):
                 return
 
             n_points = obj.getNormalizedPoints()
-            t_point = Point3D(0, 10, 0)
+            t_point = Point3D(0, 100, 0)
 
             for i in range(len(n_points)):
                 n_points[i] = transform(n_points[i], t_point)
@@ -84,7 +84,7 @@ class ControlWidget(QWidget):
                 return
             
             n_points = obj.getNormalizedPoints()
-            t_point = Point3D(0, -10, 0)
+            t_point = Point3D(0, -100, 0)
             
             for i in range(len(n_points)):
                 n_points[i] = transform(n_points[i], t_point)
@@ -102,7 +102,7 @@ class ControlWidget(QWidget):
                 return
             
             n_points = obj.getNormalizedPoints()
-            t_point = Point3D(-10, 0, 0)
+            t_point = Point3D(-100, 0, 0)
             
             for i in range(len(n_points)):
                 n_points[i] = transform(n_points[i], t_point)
@@ -120,7 +120,7 @@ class ControlWidget(QWidget):
                 return
             
             n_points = obj.getNormalizedPoints()
-            t_point = Point3D(10, 0, 0)
+            t_point = Point3D(100, 0, 0)
             
             for i in range(len(n_points)):
                 n_points[i] = transform(n_points[i], t_point)

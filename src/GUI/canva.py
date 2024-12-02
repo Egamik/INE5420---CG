@@ -2,14 +2,14 @@ from typing import List
 from math import radians as rad, tan
 
 from PyQt5.QtGui import QPainter, QColor, QImage, QPen
-from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QWidget
 from base.graphic_obj import GraphicObject, GraphicObjectType
 from base.point import Point3D, Point2D
 from base.viewport import Viewport
 from utils.clipping import applyClipping
 from utils.transform_utils import normalizePoint
 
-class Canva(QLabel):
+class Canva(QWidget):
 
     def __init__(self, parent, width, height, getClipType):
         super().__init__(parent=parent)
@@ -37,7 +37,7 @@ class Canva(QLabel):
         self.focal_angle = 20
         self.focal_distance = 100
         # Set up focal point for perspective projection
-        self.viewport = Viewport(0, 0, self.view_w, self.view_h)
+        self.viewport = Viewport(self.view_w, self.view_h)
         cameraPosition = Point3D(self.viewport.transformations.position.x, self.viewport.transformations.position.y - (tan(rad(self.focal_angle)) * self.focal_distance), self.viewport.transformations.position.z + self.focal_distance)
         self.viewport.camera_position = cameraPosition
         
@@ -71,15 +71,17 @@ class Canva(QLabel):
     def getBoundaries(self) -> List[Point2D]:
         """ Get points for top left and bottom right in cartesian coordiantes. """
         bounds: List[Point2D] = []
-        update_x = - self.image.width() // 2 + self.x_padding
-        update_y = - self.image.height() // 2 + self.y_padding
-        self.center_x = update_x
-        self.center_y = update_y
-        top_l = Point2D(update_x, -update_y)
-        bottom_r = Point2D(-update_x, update_y)
-        print('Get bounds. Cartesian coordinates')
-        print('x_left: ', top_l.x, ' y_left: ', top_l.y)
-        print('x_right: ', bottom_r.x, ' y_right: ', bottom_r.y)
+        # update_x = - self.image.width() // 2 + self.x_padding
+        # update_y = - self.image.height() // 2 + self.y_padding
+        # self.center_x = update_x
+        # self.center_y = update_y
+        # top_l = Point2D(update_x, -update_y)
+        # bottom_r = Point2D(-update_x, update_y)
+        top_l = Point2D(self.viewport.x_min, self.viewport.y_max)
+        bottom_r = Point2D(self.viewport.x_max, self.viewport.y_min)
+        # print('Get bounds. Cartesian coordinates')
+        # print('x_left: ', top_l.x, ' y_left: ', top_l.y)
+        # print('x_right: ', bottom_r.x, ' y_right: ', bottom_r.y)
         bounds.append(top_l)
         bounds.append(bottom_r)
         return bounds
@@ -211,9 +213,9 @@ class Canva(QLabel):
         self.image.fill(QColor("white"))
 
         # Adjust the viewport size accordingly
-        self.viewport.width = new_width - (2 * self.x_padding)
-        self.viewport.height = new_height - (2 * self.y_padding)
-        self.viewport.updateBounds()
+        # self.viewport.width = new_width - (2 * self.x_padding)
+        # self.viewport.height = new_height - (2 * self.y_padding)
+        # self.viewport.updateBounds()
         # print(f"Resized: image to {new_width}x{new_height}, viewport to {self.viewport.width}x{self.viewport.height}")
         self.drawObjects()
 

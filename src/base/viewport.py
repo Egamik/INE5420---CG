@@ -7,16 +7,12 @@ from utils.view_transform import Transform
 
 
 class Viewport:
-    def __init__(self, 
-                x: int,
-                y: int,
+    def __init__(self,
                 width: int,
                 height: int,
                 projection: CameraProjection = CameraProjection.PARALLEL
     ):
         # View center cartesian
-        self.x:int = int(x)
-        self.y:int = int(y)
         # Canva dimensions
         self.width:int = int(width)
         self.height:int = int(height)
@@ -72,7 +68,7 @@ class Viewport:
         elif axis == Axis.Z:
             rotation.z = (rotation.z + angle)
         
-        self.transformations.rotation =rotation
+        self.transformations.rotation = rotation
         
 
     def clear(self):
