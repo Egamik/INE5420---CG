@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (
-    QWidget, QTableWidget, QTableWidgetItem, QMessageBox
+    QWidget, QTableWidget, QTableWidgetItem, QMessageBox, QVBoxLayout
 )
 from typing import List
 from base.graphic_obj import GraphicObject
@@ -12,10 +12,16 @@ class ObjectTableWidget(QWidget):
         self.objects: List[GraphicObject] = []
         
         # Create the QTableWidget
-        self.table = QTableWidget()
+        self.table = QTableWidget(self)
         self.table.setRowCount(len(self.objects))
         self.table.setColumnCount(2)
         self.table.setHorizontalHeaderLabels(['Name', 'Color'])
+        
+        layout = QVBoxLayout()
+        layout.addWidget(self.table)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
+        
         self.populateTable()
         
     def populateTable(self):
@@ -23,7 +29,7 @@ class ObjectTableWidget(QWidget):
         self.table.setRowCount(len(self.objects))  # Update row count
         for row, obj in enumerate(self.objects):
             self.table.setItem(row, 0, QTableWidgetItem(str(obj.name)))
-            self.table.setItem(row, 1, QTableWidgetItem(str(obj.color)))
+            self.table.setItem(row, 1, QTableWidgetItem(str(obj.color.name())))
     
     def addObject(self, object: GraphicObject):
         """Add a new object to the table."""

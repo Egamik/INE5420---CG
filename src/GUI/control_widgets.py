@@ -35,6 +35,7 @@ class ControlWidget(QWidget):
         
         self.zoomin_button.clicked.connect(lambda: self.onZoom(100))
         self.zoomout_button.clicked.connect(lambda: self.onZoom(-100))
+        
         self.up_button.clicked.connect(self.onUp)
         self.down_button.clicked.connect(self.onDown)
         self.left_button.clicked.connect(self.onLeft)
@@ -74,7 +75,6 @@ class ControlWidget(QWidget):
             obj.setPoints(updated_points)
         else:
             self.viewport.pan(0, 100)
-            # Repaint
         self.repaintView()
     
     def onDown(self):

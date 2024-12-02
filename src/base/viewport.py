@@ -64,19 +64,13 @@ class Viewport:
     def rotate(self, angle: float, axis: Axis):
         rotation = self.transformations.rotation
         if axis == Axis.X:
-            rotation.x = (rotation.x + angle) % 360
-            if rotation.x < 0:
-                rotation += 360
+            rotation.x = (rotation.x + angle)
                 
         elif axis == Axis.Y:
-            rotation.y = (rotation.y + angle) % 360
-            if rotation.y < 0:
-                rotation.y += 360
+            rotation.y = (rotation.y + angle)
         
         elif axis == Axis.Z:
-            rotation.z = (rotation.z + angle) % 360
-            if rotation.z < 0:
-                rotation.z += 360
+            rotation.z = (rotation.z + angle)
         
         self.transformations.rotation =rotation
         

@@ -151,6 +151,12 @@ class Canva(QLabel):
                     t_points.append(n1)
                     t_points.append(n2)
                 obj.normailzedPoints = t_points
+            elif (obj.type == GraphicObjectType.BSpline):
+                obj.setUpLines()
+                for point in obj.render_points:
+                    n_point = normalizePoint(point, self.viewport)
+                    t_points.append(n_point)
+                obj.normailzedPoints = t_points
             else:
                 for point in points:
                     # n_point = transformParallelProjection(point, self.viewport.vpr, self.viewport.rot_angle, self.viewport.rot_angle, self.viewport.rot_angle)

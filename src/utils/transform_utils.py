@@ -39,6 +39,8 @@ def normalizePoint(point: Point3D, viewport: Viewport) -> Point2D:
 
 
 def transformParallelProjection(point: Point3D, viewport: Viewport) -> Point2D:
+    print('\n\nParallel projection transformation')
+    print('Focus ', viewport.transformations.position.x, ', ', viewport.transformations.position.y)
     return applyViewRotationMatrix(point, viewport.transformations.position, viewport)
     
 def transformPerspectiveProjection(point: Point3D, viewport: Viewport) -> Point2D:
@@ -54,12 +56,13 @@ def transformPerspectiveProjection(point: Point3D, viewport: Viewport) -> Point2
     ])
     
     return multiplyMatrices([mat, perspectiveMatrix])
-    
+
+# Applies rotations
 def applyViewRotationMatrix(point: Point3D, focus: Point3D, viewport: Viewport):
     mat = np.matrix([point.x, point.y, point.z, 1])
     
     focus_mat = getTranslationMatrix(focus)
-    focus_tmat = getTranslationMatrix(Point3D(-focus.x, -focus.y, -focus.z))
+    focus_inv_mat = getTranslationMatrix(Point3D(-focus.x, -focus.y, -focus.z))
     
     vpr = viewport.transformations.position
     vpn = Point3D(vpr.x - focus.x, vpr.y - focus.y, vpr.z - focus.z)
@@ -75,7 +78,7 @@ def applyViewRotationMatrix(point: Point3D, focus: Point3D, viewport: Viewport):
     rx_mat = getRotationMatrix(rotation_x, Axis.X)
     ry_mat = getRotationMatrix(rotation_y, Axis.Y)
     
-    vpn_rotation_mat = multiplyMatrices([focus_tmat, rx_mat, ry_mat, focus_mat])
+    vpn_rotation_mat = multiplyMatrices([focus_mat, rx_mat, ry_mat, focus_inv_mat])
     
     return multiplyMatrices([mat, vpn_rotation_mat])
     

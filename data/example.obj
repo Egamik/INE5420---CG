@@ -1,0 +1,30 @@
+v 0.0 0.0 0.0
+v 100.0 100.0 0.0
+v 700.0 700.0 0.0
+v -100.0 0.0 0.0
+v 100.0 0.0 0.0
+v -100.0 200.0 0.0
+v 100.0 200.0 0.0
+v 0.0 0.0 0.0
+v 700.0 700.0 0.0
+v 800.0 300.0 0.0
+v 800.0 800.0 0.0
+v 300.0 300.0 0.0
+v 300.0 800.0 0.0
+mtllib example_mtl_file.mtl
+o window
+w 8 9
+o curva
+curv 10 11 12 13 
+o point
+usemtl red
+p 1
+o line
+usemtl blue
+l 1 3
+o polygon
+usemtl red
+l 4 5 6 7 4
+o triangle
+usemtl texture
+f 4 5 6

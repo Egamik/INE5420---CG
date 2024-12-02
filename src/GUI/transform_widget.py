@@ -186,7 +186,7 @@ class TransformationWidgets(QWidget):
         
         obj: GraphicObject = self.getSelectedObject()
         normal_matrices = obj.getNormalizedPoints()
-        angle = 10 if (direction == 'left') else 350
+        angle = 60 if (direction == 'left') else 300
         
         for i in range(len(normal_matrices)):
             normal_matrices[i] = rotateAroundOrigin(normal_matrices[i], angle, self.axis)
@@ -200,7 +200,7 @@ class TransformationWidgets(QWidget):
         ref_point = Point3D(self.point.x, self.point.y, self.point.z)
         obj: GraphicObject = self.getSelectedObject()        
         normal_matrices = obj.getNormalizedPoints()
-        angle: int = 10 if (direction == 'left') else 350
+        angle: int = 60 if (direction == 'left') else 300
         
         for i in range(len(normal_matrices)):
             normal_matrices[i] = rotateAroundPoint(normal_matrices[i], angle, ref_point, self.axis)
@@ -215,7 +215,7 @@ class TransformationWidgets(QWidget):
         
         normal_matrices = obj.getNormalizedPoints()
         center_point = getCenterPointMatrix(normal_matrices)        
-        angle: int = 10 if (direction == 'left') else 350
+        angle: int = 60 if (direction == 'left') else 300
         
         for i in range(len(normal_matrices)):
             normal_matrices[i] = rotateAroundPoint(normal_matrices[i],  angle, center_point, self.axis)
