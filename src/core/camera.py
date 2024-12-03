@@ -1,7 +1,6 @@
-from components import Transform
+from core.components import Transform
 from enumerators.projection_type import CameraProjection
 from enumerators.clipping_type import ClippingLineAlgorithm, ClippingCurveAlgorithm
-from utils.math_utils import Point3D
 
 class Camera:
   def __init__(self,

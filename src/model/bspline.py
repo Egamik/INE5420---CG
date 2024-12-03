@@ -6,11 +6,11 @@ from PyQt5.QtGui import QPainter, QColor
 from enumerators.graphic_object_type import GraphicObjectType
 from utils.math_utils import Point2D, Point3D
 from utils.curve_utils import getGB, blendingFunction, forwardDifferences
-from utils.clipping.cohen_sutherland import applyCohenSutherland
+from utils.clipping import applyCohenSutherland
 from model.base_object import GraphicObject
 from utils.window_utils import viewportTransform
-from viewport import Viewport
-from window import Window
+from core.viewport import Viewport
+from core.window import Window
 
 class BSpline(GraphicObject):
     

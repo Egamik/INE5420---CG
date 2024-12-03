@@ -6,8 +6,8 @@ from utils.math_utils import Point3D
 from enumerators.graphic_object_type import GraphicObjectType
 from model.base_object import GraphicObject
 from utils.window_utils import viewportTransform
-from viewport import Viewport
-from window import Window
+from core.viewport import Viewport
+from core.window import Window
 
 class Line(GraphicObject):
   def __init__(self, name: str, p1: Point3D, p2: Point3D, color: QColor):

@@ -9,7 +9,7 @@ from model.base_object import GraphicObject
 from utils.window_utils import getNormalPoint
 from utils.transform_utils import translate, rotateAroundOrigin, rotateAroundPoint, scale, getCenterMatrixPoint
 from utils.math_utils import Point3D
-from utils.clipping.clipping import applyClipping
+from utils.clipping import applyClipping
 from widgets.axis_selector import AxisWidget
 
 class TransformationWidget(QWidget):

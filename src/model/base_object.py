@@ -5,7 +5,7 @@ from PyQt5.QtGui import QColor
 
 from enumerators.graphic_object_type import GraphicObjectType
 from utils.math_utils import Point2D, Point3D
-from components import Transform
+from core.components import Transform
 
 class GraphicObject:
   def __init__(self, name: str, objType: GraphicObjectType, points: List[Point3D], color: QColor) -> None:

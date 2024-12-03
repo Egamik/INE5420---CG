@@ -4,8 +4,8 @@ from utils.math_utils import Point3D
 from enumerators.graphic_object_type import GraphicObjectType
 from model.base_object import GraphicObject
 from utils.window_utils import viewportTransform
-from viewport import Viewport
-from window import Window
+from core.viewport import Viewport
+from core.window import Window
 
 class Point(GraphicObject):
   def __init__(self, name: str, point: Point3D, color: QColor):

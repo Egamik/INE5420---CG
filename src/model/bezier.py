@@ -6,10 +6,10 @@ from enumerators.graphic_object_type import GraphicObjectType
 from model.base_object import GraphicObject
 from utils.math_utils import Point2D, Point3D
 from utils.curve_utils import getGB, blendingFunction
-from utils.clipping.cohen_sutherland import applyCohenSutherland
+from utils.clipping import applyCohenSutherland
 from utils.window_utils import viewportTransform
-from viewport import Viewport
-from window import Window
+from core.viewport import Viewport
+from core.window import Window
 
 class BezierCurve(GraphicObject):
   def __init__(self, name: str, points: List[Point3D], color: QColor):

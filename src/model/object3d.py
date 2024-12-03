@@ -6,8 +6,8 @@ from enumerators.graphic_object_type import GraphicObjectType
 from model.base_object import GraphicObject
 from utils.math_utils import Point3D
 from utils.window_utils import viewportTransform
-from viewport import Viewport
-from window import Window
+from core.viewport import Viewport
+from core.window import Window
 
 class Object3D(GraphicObject):
   def __init__(self, name: str, edges: List[Tuple[Point3D]], color: QColor):

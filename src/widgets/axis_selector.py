@@ -4,19 +4,19 @@ from enumerators.axis_type import Axis
 
 class   AxisWidget(QHBoxLayout):
 
-    def __init__(self, onChange: ()):
+    def __init__(self, onChange):
         super(AxisWidget, self).__init__(None)
         
         self.setContentsMargins(0, 0, 0, 15)
        
-        axisXRadio = QRadioButton('Axis X')
-        axisYRadio = QRadioButton('Axis Y')
-        axisZRadio = QRadioButton('Axis Z')
+        axis_x_radio = QRadioButton('Axis X')
+        axis_y_radio = QRadioButton('Axis Y')
+        axis_z_radio = QRadioButton('Axis Z')
 
-        axisXRadio.clicked.connect(lambda: onChange(Axis.X) )
-        axisYRadio.clicked.connect(lambda: onChange(Axis.Y) )
-        axisZRadio.clicked.connect(lambda: onChange(Axis.Z) )
+        axis_x_radio.clicked.connect(lambda: onChange(Axis.X) )
+        axis_y_radio.clicked.connect(lambda: onChange(Axis.Y) )
+        axis_z_radio.clicked.connect(lambda: onChange(Axis.Z) )
 
-        self.addWidget(axisXRadio)
-        self.addWidget(axisYRadio)
-        self.addWidget(axisZRadio)
+        self.addWidget(axis_x_radio)
+        self.addWidget(axis_y_radio)
+        self.addWidget(axis_z_radio)

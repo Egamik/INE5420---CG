@@ -1,34 +1,26 @@
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QWidget, QToolButton, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout
 
 class ArrowsWidget(QWidget):
-  def __init__(self, onUp, onDown, onLeft, onRight):
-    super(ArrowsWidget, self).__init__(None)
+	def __init__(self, onUp, onDown, onLeft, onRight):
+		super(ArrowsWidget, self).__init__(None)
 
-    self.upButton = QToolButton()
-    self.upButton.setArrowType(QtCore.Qt.UpArrow)
-    self.upButton.clicked.connect(onUp)
-    self.upButton.setFixedWidth(75)
-    self.downButton = QToolButton()
-    self.downButton.setArrowType(QtCore.Qt.DownArrow)
-    self.downButton.clicked.connect(onDown)
-    self.downButton.setFixedWidth(75)
-    self.leftButton = QToolButton()
-    self.leftButton.setArrowType(QtCore.Qt.LeftArrow)
-    self.leftButton.clicked.connect(onLeft)
-    self.leftButton.setFixedWidth(75)
-    self.rightButton = QToolButton()
-    self.rightButton.setArrowType(QtCore.Qt.RightArrow)
-    self.rightButton.clicked.connect(onRight)
-    self.rightButton.setFixedWidth(75)
-
-    self.layout: QVBoxLayout = QVBoxLayout()
-    self.layout.addWidget(self.upButton,alignment=QtCore.Qt.AlignCenter)
-    row = QHBoxLayout()
-    row.addWidget(self.leftButton)
-    row.addWidget(self.rightButton)
-    self.layout.addLayout(row)
-    self.layout.addWidget(self.downButton,alignment=QtCore.Qt.AlignCenter)
-
-  def getLayout(self) -> QVBoxLayout:
-      return self.layout
+		self.up_button = QPushButton("↑")
+		self.down_button = QPushButton("↓")
+		self.left_button = QPushButton("←")
+		self.right_button = QPushButton("→")
+		self.up_button.clicked.connect(onUp)
+		self.down_button.clicked.connect(onDown)
+		self.left_button.clicked.connect(onLeft)
+		self.right_button.clicked.connect(onRight)
+    
+    
+		self.layout: QGridLayout = QGridLayout()
+    
+		self.layout.addWidget(self.up_button, 0, 1)
+		self.layout.addWidget(self.down_button, 2, 1)
+		self.layout.addWidget(self.left_button, 1, 0)
+		self.layout.addWidget(self.right_button, 1, 2)
+    
+    
+	def getLayout(self) -> QGridLayout:
+		return self.layout

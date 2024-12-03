@@ -11,22 +11,23 @@ from enumerators.projection_type import CameraProjection
 from enumerators.graphic_object_type import GraphicObjectType
 from enumerators.axis_type import Axis
 
+from core.window import Window
+from core.camera import Camera
+from core.viewport import Viewport, ViewportLayout
+
 from widgets.object_type import SelectObjectTypeWidget
 from widgets.arrows import ArrowsWidget
 from widgets.console import ConsoleWidget
 from widgets.color_picker import ColorPickerWidget
 from widgets.transformation import TransformationWidget
 from utils.object_utils import instantiateObject, getTypeByPoints
-from utils.clipping.clipping import ClippingLineAlgorithm, applyClipping
+from utils.clipping import ClippingLineAlgorithm, applyClipping
 from utils.window_utils import getNormalPoint
 from utils.transform_utils import rotateAroundOrigin 
 from utils.math_utils import Point3D
 from utils.object_utils import instantiateObject, getTypeByPoints
 from file_parser import loadFromJson, saveToJson, loadFromObj, saveToObj
 from model.base_object import GraphicObject
-from camera import Camera
-from viewport import Viewport, ViewportLayout
-from window import Window
 from widgets.axis_selector import AxisWidget
 
 class MainWindow(QWidget):
@@ -34,36 +35,33 @@ class MainWindow(QWidget):
     super().__init__()
     
     # Config window
-    self.focalAngle = 15
-    self.focalDistance = 500
-    self.panValue = 100
-    self.zoomValue = 100
-    self.rotateValue = 0
-    self.rotateAxis = Axis.Z
+    self.focal_angle = 15
+    self.focal_distance = 500
+    self.pan_value = 100
+    self.zoom_value = 100
+    self.rotate_value = 0
+    self.rotate_axis = Axis.Z
     self.setupWorldWindow(0, 0, 1000, 1000, CameraProjection.PARALLEL)
 
     # Create main layout
-    self.layout = self.setupAppWindowUI(1030, 720)
+    self.layout: QHBoxLayout = self.setupAppWindowUI(1030, 720)
     self.layout.addLayout(self.setupControllersUI(), 40)
-    rightLayout = QVBoxLayout()
-    self.layout.addLayout(rightLayout, 60)
-    rightLayout.addLayout(self.setupViewport(600, 600, 0.8))
-    rightLayout.addWidget(QLabel("Console Output"))
-    rightLayout.addLayout(ConsoleWidget())
+    right_layout = QVBoxLayout()
+    self.layout.addLayout(right_layout, 60)
+    right_layout.addLayout(self.setupViewport(600, 600, 0.8))
+    right_layout.addWidget(QLabel("Console Output"))
+    right_layout.addLayout(ConsoleWidget())
 
     self.layout.setContentsMargins(20, 20, 20, 20)
 
-    #jsonObjects = loadFromJson(os.path.join('..','src', 'data', 'objects.json'))
-    #for obj in jsonObjects:
-      #self.viewport.addObject(obj)
     self.updateObjectList()
-    self.zoomTextField.setText(str(self.zoomValue))
-    self.panTextField.setText(str(self.panValue))
-    self.rotateTextField.setText(str(self.rotateValue))
+    self.zoomTextField.setText(str(self.zoom_value))
+    self.panTextField.setText(str(self.pan_value))
+    self.rotateTextField.setText(str(self.rotate_value))
 
   def setupWorldWindow(self, x, y, width, height, cameraProjection: CameraProjection):
     self.worldWindow = Window(x, y, width, height, Camera(projectionType=cameraProjection))
-    cameraPosition = Point3D(self.worldWindow.transform.position.x, self.worldWindow.transform.position.y - (tan(rad(self.focalAngle)) * self.focalDistance), self.worldWindow.transform.position.z + self.focalDistance)
+    cameraPosition = Point3D(self.worldWindow.transform.position.x, self.worldWindow.transform.position.y - (tan(rad(self.focal_angle)) * self.focal_distance), self.worldWindow.transform.position.z + self.focal_distance)
     self.worldWindow.activeCamera.transform.position = cameraPosition
 
   def setupAppWindowUI(self, width, height) -> QHBoxLayout:
@@ -152,10 +150,10 @@ class MainWindow(QWidget):
     layout: QHBoxLayout = QHBoxLayout()
 
     # Create labels
-    projTitle = QLabel()
-    projTitle.setText("Camera Projection Type: " )
-    projTitle.setAutoFillBackground(True)
-    projTitle.adjustSize()
+    proj_title = QLabel()
+    proj_title.setText("Camera Projection Type: " )
+    proj_title.setAutoFillBackground(True)
+    proj_title.adjustSize()
 
     # Create Buttons
     buttons = QButtonGroup()
@@ -169,7 +167,7 @@ class MainWindow(QWidget):
     buttons.addButton(perspectiveButton)
     
     # Add widgets to layout
-    layout.addWidget(projTitle)
+    layout.addWidget(proj_title)
     layout.addWidget(parallelButton)
     layout.addWidget(perspectiveButton)
 
@@ -193,10 +191,10 @@ class MainWindow(QWidget):
     # Create Buttons
     buttons = QButtonGroup()
 
-    self.clippingLiangBarskyRadio = QRadioButton("Liang-Barsky")
-    self.clippingLiangBarskyRadio.setChecked(True)
-    self.clippingLiangBarskyRadio.clicked.connect(lambda: (self.worldWindow.activeCamera.setLineClipping(ClippingLineAlgorithm.LiangBarsky), self.onWindowChange()))
-    buttons.addButton(self.clippingLiangBarskyRadio)
+    self.clipping_liangbarsky_radio = QRadioButton("Liang-Barsky")
+    self.clipping_liangbarsky_radio.setChecked(True)
+    self.clipping_liangbarsky_radio.clicked.connect(lambda: (self.worldWindow.activeCamera.setLineClipping(ClippingLineAlgorithm.LiangBarsky), self.onWindowChange()))
+    buttons.addButton(self.clipping_liangbarsky_radio)
     
     self.clippingCohenSutherlandRadio = QRadioButton("Cohen-Sutherland")
     self.clippingCohenSutherlandRadio.clicked.connect(lambda: (self.worldWindow.activeCamera.setLineClipping(ClippingLineAlgorithm.CohenSutherland), self.onWindowChange()))
@@ -204,7 +202,7 @@ class MainWindow(QWidget):
 
     # Add widgets to layout
     layout.addWidget(clippingTitle)
-    layout.addWidget(self.clippingLiangBarskyRadio)
+    layout.addWidget(self.clipping_liangbarsky_radio)
     layout.addWidget(self.clippingCohenSutherlandRadio)
 
     return layout
@@ -215,10 +213,10 @@ class MainWindow(QWidget):
     layout.setContentsMargins(0, 25, 0, 25)
 
     # Create buttons
-    zoomInButton = QPushButton("Zoom in")
-    zoomOutButton = QPushButton("Zoom out")
-    zoomInButton.clicked.connect(self.onZoomIn)
-    zoomOutButton.clicked.connect(self.onZoomOut)
+    zoom_in_btn = QPushButton("Zoom in")
+    zoom_out_btn = QPushButton("Zoom out")
+    zoom_in_btn.clicked.connect(self.onZoomIn)
+    zoom_out_btn.clicked.connect(self.onZoomOut)
 
     # Create labels
     zoomText = QLabel()
@@ -234,8 +232,8 @@ class MainWindow(QWidget):
     # Add widgets to layout
     layout.addWidget(zoomText)
     layout.addWidget(self.zoomTextField)
-    layout.addWidget(zoomInButton)
-    layout.addWidget(zoomOutButton)
+    layout.addWidget(zoom_in_btn)
+    layout.addWidget(zoom_out_btn)
 
     return layout
 
@@ -267,13 +265,13 @@ class MainWindow(QWidget):
 
   def onAxisInput(self, value):
     if(value == 'x'):
-      self.rotateAxis = Axis.X
+      self.rotate_axis = Axis.X
       print("Rotating window on axis: " + Axis.X.name)
     if(value == 'y'):
-      self.rotateAxis = Axis.Y  
+      self.rotate_axis = Axis.Y  
       print("Rotating window on axis: " + Axis.Y.name)
     if(value == 'z'):
-      self.rotateAxis = Axis.Z
+      self.rotate_axis = Axis.Z
       print("Rotating window on axis: " + Axis.Z.name)
 
   def setupRotateUI(self) -> QVBoxLayout:
@@ -392,36 +390,36 @@ class MainWindow(QWidget):
     self.updateObjectList()
 
   def onPan(self, xDir: int, yDir: int):
-    print('Pan: ', self.zoomValue)
+    print('Pan: ', self.zoom_value)
     matrix = np.matrix([xDir, yDir, 0, 1])
     matrix = rotateAroundOrigin(matrix, self.worldWindow.transform.rotation.z, Axis.Z)
-    self.worldWindow.pan(matrix.item(0), matrix.item(1), self.panValue)
+    self.worldWindow.pan(matrix.item(0), matrix.item(1), self.pan_value)
     self.onWindowChange()
 
   def onZoomIn(self):
-    print('Zoom in: ', self.zoomValue)
-    self.worldWindow.zoom(self.zoomValue)
+    print('Zoom in: ', self.zoom_value)
+    self.worldWindow.zoom(self.zoom_value)
     self.onWindowChange()
 
   def onZoomOut(self):
-    print('Zoom out: ', self.zoomValue)
-    self.worldWindow.zoom(-self.zoomValue)
+    print('Zoom out: ', self.zoom_value)
+    self.worldWindow.zoom(-self.zoom_value)
     self.onWindowChange()
 
   def onRotate(self):
-    print('Rotate: ', self.rotateValue)
-    self.worldWindow.rotate(self.rotateValue, self.rotateAxis)
-    print("Rotating window on axis: " + self.rotateAxis.name)
+    print('Rotate: ', self.rotate_value)
+    self.worldWindow.rotate(self.rotate_value, self.rotate_axis)
+    print("Rotating window on axis: " + self.rotate_axis.name)
     self.onWindowChange()
 
   def onZoomInput(self, value):
-    self.zoomValue = self.onNumberFieldInput(value)  
+    self.zoom_value = self.onNumberFieldInput(value)  
 
   def onPanInput(self, value):
-    self.panValue = self.onNumberFieldInput(value)  
+    self.pan_value = self.onNumberFieldInput(value)  
   
   def onRotateInput(self, value):
-    self.rotateValue = self.onNumberFieldInput(value)  
+    self.rotate_value = self.onNumberFieldInput(value)  
 
   def onNumberFieldInput(self, value) -> float:
     try:
@@ -475,7 +473,7 @@ class MainWindow(QWidget):
       self.selectObjectTypeWidget.show()
 
   def setRotateAxis(self, axis: Axis):
-    self.rotateAxis = axis
+    self.rotate_axis = axis
 
 def path_leaf(path):
     head, tail = ntpath.split(path)

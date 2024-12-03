@@ -1,7 +1,7 @@
 from typing import Tuple
-from PyQt5.QtWidgets import QLineEdit, QListWidget, QMessageBox, QPushButton, QRadioButton, QVBoxLayout, QHBoxLayout, QWidget
+from PyQt5.QtWidgets import QPushButton, QRadioButton, QVBoxLayout, QHBoxLayout, QWidget
 from enumerators.graphic_object_type import GraphicObjectType 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QLabel
 
 class SelectObjectTypeWidget(QWidget):
