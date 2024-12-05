@@ -7,9 +7,9 @@ from ast import literal_eval
 
 from PyQt5.QtWidgets import (QLabel, QMessageBox, QVBoxLayout, QHBoxLayout, 
                             QMainWindow, QPushButton, QLineEdit, QListWidget, QFileDialog, 
-                            QRadioButton, QButtonGroup, QAction, QWidget
+                            QRadioButton, QButtonGroup, QAction, QWidget, QDialog
                             )
-
+from PyQt5.QtGui import QColor
 from enumerators.projection_type import CameraProjection
 from enumerators.graphic_object_type import GraphicObjectType
 from enumerators.axis_type import Axis
@@ -18,17 +18,15 @@ from core.window import Window
 from core.camera import Camera
 from core.viewport import Viewport, ViewportLayout
 
-from widgets.object_type import SelectObjectTypeWidget
 from widgets.arrows import ArrowsWidget
 from widgets.console import ConsoleWidget
-from widgets.color_picker import ColorPickerWidget
 from widgets.transformation import TransformationWidget
-from utils.object_utils import instantiateObject, getTypeByPoints
+from widgets.object_dialog import AddObjectDialog
+from utils.object_utils import instantiateObject
 from utils.clipping import ClippingLineAlgorithm, applyClipping
 from utils.window_utils import getNormalPoint
 from utils.transform_utils import rotateAroundOrigin 
 from utils.math_utils import Point3D
-from utils.object_utils import instantiateObject, getTypeByPoints
 from file_parser import loadFromJson, saveToJson, loadFromObj, saveToObj
 from model.base_object import GraphicObject
 from widgets.axis_selector import AxisWidget
@@ -120,7 +118,6 @@ class MainWindow(QMainWindow):
     self.objectList = QListWidget()
 
     # Create buttons
-    self.colorButton = ColorPickerWidget()
     transformButton = QPushButton("Transform Object")
     addObjectButton = QPushButton("Add Object")
     removeObjectButton = QPushButton("Remove Object")
@@ -128,34 +125,8 @@ class MainWindow(QMainWindow):
     removeObjectButton.clicked.connect(self.onRemoveObject)
     transformButton.clicked.connect(self.showTranslationMenu)
 
-    # Create labels
-    inputText = QLabel()
-    inputText.setText("insert points in format (x,y),(x,y),... " )
-    inputText.setAutoFillBackground(True)
-    inputText.adjustSize()
-    inputNameText = QLabel()
-    inputNameText.setText("insert object's name" )
-    inputNameText.setAutoFillBackground(True)
-    inputNameText.adjustSize()
-    inputColorText = QLabel()
-    inputColorText.setText("insert object's color" )
-    inputColorText.setAutoFillBackground(True)
-    inputColorText.adjustSize()
-
-    # Create text field
-    self.addObjectText = QLineEdit()
-    self.addObjectText.adjustSize()
-    self.addNameText = QLineEdit()
-    self.addNameText.adjustSize()
-
     # Add widgets to layout
     layout.addWidget(self.objectList)
-    layout.addWidget(inputText)
-    layout.addWidget(self.addObjectText)
-    layout.addWidget(inputNameText)
-    layout.addWidget(self.addNameText)
-    layout.addWidget(inputColorText)
-    layout.addWidget(self.colorButton)
     layout.addWidget(addObjectButton)
     layout.addWidget(removeObjectButton)
     layout.addWidget(transformButton)
@@ -325,9 +296,8 @@ class MainWindow(QMainWindow):
     if (index < 0): return
     return self.viewport.displayFile[index]
 
-  def createInstance(self, points: list, name: str, objType: GraphicObjectType):
-    self.colorButton.color
-    self.viewport.addObject(instantiateObject(name, objType, points, self.colorButton.getColor()))
+  def createInstance(self, points: list, name: str, objType: GraphicObjectType, color: QColor):
+    self.viewport.addObject(instantiateObject(name, objType, points, color))
 
   def repaint(self):
     self.viewLayout.drawDisplayFile()
@@ -367,12 +337,17 @@ class MainWindow(QMainWindow):
       saveToObj(self.viewport.displayFile, path[0], filename, [[self.worldWindow.x_min, self.worldWindow.y_min], [self.worldWindow.x_max, self.worldWindow.y_max]])
 
   def onAddObject(self):
-    self.checkNameInput()
-    self.checkCoordinatesInput(self.addNameText.text()) 
-    self.updateObjectList()
-    self.repaint()    
-    self.addObjectText.clear()
-    self.addNameText.clear()  
+    dialog = AddObjectDialog(self)
+    if dialog.exec_() == QDialog.Accepted:
+      obj_type = dialog.getObjectType()
+      obj_points = dialog.getPointData()
+      obj_name = dialog.getObjectName()
+      obj_color = dialog.getObjectColor()
+      print('Create instance: ', obj_name, ' type: ', obj_type.name)
+      self.createInstance(obj_points, obj_name, obj_type, obj_color)
+      self.updateObjectList()
+      self.repaint()
+      
 
   def onRemoveObject(self):
     obj = self.getSelectedObject()
@@ -424,10 +399,6 @@ class MainWindow(QMainWindow):
                                   "color: white"
       )
       errorMessage.exec()     
-
-  def checkNameInput(self):
-    if(not self.addNameText.text() or self.addNameText.text().isspace()):
-      self.raiseException("Add a name to this object", "Name Required")
     
   def raiseException(self, message: str, title: str):
     errorMessage = QMessageBox()
@@ -438,30 +409,11 @@ class MainWindow(QMainWindow):
     )
     errorMessage.exec()     
   
-  def checkCoordinatesInput(self, name: str):
-    try:
-      pointsString = self.addObjectText.text()
-      listPoints = [literal_eval(f'({x})') for x in pointsString.strip('()').split('),(')]  
-      self.countPoints(listPoints, name)
-      return              
-    except:
-      self.raiseException('Your coordinates should be in format (x,y),(x,y),...', 'Wrong Format')  
-
   def showTranslationMenu(self):
     index = self.objectList.currentRow()
     if (index < 0): return
     self.translation = TransformationWidget(self.viewport.displayFile[index], self.worldWindow, self.repaint)
     self.translation.show()
-
-  def countPoints(self, listPoints, name):
-    numPoints = len(listPoints)
-    if (numPoints <= 0): return
-
-    if(numPoints < 4):
-      self.createInstance(listPoints, name, getTypeByPoints(numPoints))
-    else:
-      self.selectObjectTypeWidget = SelectObjectTypeWidget(self.createInstance, name, listPoints, self.updateObjectList, self.repaint)
-      self.selectObjectTypeWidget.show()
 
   def setRotateAxis(self, axis: Axis):
     self.rotate_axis = axis

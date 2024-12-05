@@ -3,8 +3,11 @@ from PyQt5.QtWidgets import (
     QDialog, QFormLayout, QDialogButtonBox, QVBoxLayout, QLabel,
     QSpinBox, QLineEdit, QCheckBox, QHBoxLayout, QVBoxLayout
 )
+
+from PyQt5.QtGui import QColor
 from enumerators.graphic_object_type import GraphicObjectType
 from model.point import Point3D
+from widgets.color_picker import ColorPickerWidget
 
 class AddObjectDialog(QDialog):
     def __init__(self, parent=None):
@@ -14,6 +17,28 @@ class AddObjectDialog(QDialog):
 
         # Dialog box layout
         self.main_layout = QVBoxLayout(self)
+        
+        name_color_layout = QVBoxLayout()
+        # Name widgets
+        self.object_name = '' 
+        name_label = QLabel('Name:')
+        self.name_input = QLineEdit(self)
+        self.name_input.setPlaceholderText("Enter object's name")
+        self.name_input.textChanged.connect(self.setObjectName)
+        
+        name_layout = QHBoxLayout()
+        name_layout.addWidget(name_label)
+        name_layout.addWidget(self.name_input)
+        # Color widget
+        color_layout = QHBoxLayout()
+        color_label = QLabel('Color:')
+        self.color_picker = ColorPickerWidget()
+        color_layout.addWidget(color_label)
+        color_layout.addWidget(self.color_picker)
+        
+        name_color_layout.addLayout(name_layout)
+        name_color_layout.addLayout(color_layout)
+        self.main_layout.addLayout(name_color_layout)
 
         # Curve and 3D checkboxes
         self.curve = False
@@ -38,7 +63,7 @@ class AddObjectDialog(QDialog):
         self.main_layout.addWidget(QLabel("Number of Points or Edges:"))
         self.num_points_spinbox = QSpinBox(self)
         self.num_points_spinbox.setMinimum(1)  # At least 1 point/edge
-        self.num_points_spinbox.valueChanged.connect(self.update_point_inputs)
+        self.num_points_spinbox.valueChanged.connect(self.updatePointInputs)
         self.main_layout.addWidget(self.num_points_spinbox)
 
         # Placeholder for coordinate input forms
@@ -54,8 +79,11 @@ class AddObjectDialog(QDialog):
         # Store input fields for the coordinates or edges
         self.point_inputs: List = []
         self.edge_inputs: List[Tuple] = []
-        self.update_point_inputs()
+        self.updatePointInputs()
 
+    def setObjectName(self, name: str):
+        self.object_name = name
+        
     def curveSelected(self):
         print('toggle curve')
         self.curve = not self.curve
@@ -68,9 +96,9 @@ class AddObjectDialog(QDialog):
     def selected3d(self):
         print('toggle 3D')
         self.obj3D = not self.obj3D
-        self.update_point_inputs()
+        self.updatePointInputs()
         
-    def update_point_inputs(self):
+    def updatePointInputs(self):
         # Clear current input fields
         for i in reversed(range(self.point_inputs_layout.count())):
             widget_item = self.point_inputs_layout.itemAt(i)
@@ -141,7 +169,7 @@ class AddObjectDialog(QDialog):
                 
                 self.point_inputs.append((x_input, y_input, None))
 
-    def getPointData(self) -> List[Point3D]:
+    def getPointData(self) -> List[Tuple]:
         # Retrieve data from input fields
         points = []
         if self.obj3D:
@@ -150,7 +178,7 @@ class AddObjectDialog(QDialog):
                 try:
                     p1_x, p1_y, p1_z = [int(field.text()) for field in p1_inputs]
                     p2_x, p2_y, p2_z = [int(field.text()) for field in p2_inputs]
-                    points.append((Point3D(p1_x, p1_y, p1_z), Point3D(p2_x, p2_y, p2_z)))
+                    points.append(((p1_x, p1_y, p1_z), (p2_x, p2_y, p2_z)))
                 except ValueError:
                     # Handle cases where input is invalid
                     pass
@@ -160,7 +188,7 @@ class AddObjectDialog(QDialog):
                 try:
                     x = int(x_input.text())
                     y = int(y_input.text())
-                    points.append(Point3D(x, y, 0))
+                    points.append((x, y, 0))
                 except ValueError:
                     # Handle cases where input is invalid
                     pass
@@ -182,3 +210,9 @@ class AddObjectDialog(QDialog):
             return GraphicObjectType.Line
         else:
             return GraphicObjectType.Polygon
+
+    def getObjectName(self):
+        return self.name_input.text()
+    
+    def getObjectColor(self) -> QColor:
+        return self.color_picker.color
