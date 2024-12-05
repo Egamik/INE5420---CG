@@ -8,10 +8,10 @@ from core.viewport import Viewport
 from core.window import Window
 
 class Point(GraphicObject):
-  def __init__(self, name: str, point: Point3D, color: QColor):
-    super().__init__(name, GraphicObjectType.Point, [point], color)
+	def __init__(self, name: str, point: Point3D, color: QColor):
+		super().__init__(name, GraphicObjectType.Point, [point], color)
 
-  def draw(self, painter: QPainter, viewport: Viewport, window: Window):
-    if (len(self.renderPoints) <= 0): return
-    x, y = viewportTransform(self.renderPoints[0], window, viewport)
-    painter.drawPoint(x,y)
+	def draw(self, painter: QPainter, viewport: Viewport, window: Window):
+		if (len(self.renderPoints) <= 0): return
+		x, y = viewportTransform(self.renderPoints[0], window, viewport)
+		painter.drawPoint(x,y)

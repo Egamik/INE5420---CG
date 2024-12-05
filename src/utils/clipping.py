@@ -30,27 +30,27 @@ def applyClipping(objectType: GraphicObjectType, points: List[Point3D], window: 
 	# Polygon clipping
 	elif GraphicObjectType.Polygon == objectType:
 		clippingPolygon: List[Point2D] = [
-			Point2D(window.xMin, window.yMin), 
-			Point2D(window.xMin, window.yMax),
-			Point2D(window.xMax, window.yMax),
-			Point2D(window.xMax, window.yMin)
+			Point2D(window.x_min, window.y_min), 
+			Point2D(window.x_min, window.y_max),
+			Point2D(window.x_max, window.y_max),
+			Point2D(window.x_max, window.y_min)
 		]
 		return applySutherlandHodgman(points, clippingPolygon)
 
 	return points
 
 def applyPointClipping(point: Point2D, window: Window) -> List[Point2D]:
-	if point.x > window.xMin and point.x < window.xMax and point.y > window.yMin and point.y < window.yMax:
+	if point.x > window.x_min and point.x < window.x_max and point.y > window.y_min and point.y < window.y_max:
 		return [point] # Inside window
 	return [] # Outside window
 
 # Cohen-Sutherland line clipping
 def applyCohenSutherland(startPoint: Point2D, endPoint: Point2D, window: Window) -> List[Point2D]:
     
-	xMin = window.xMin
-	yMin = window.yMin
-	xMax = window.xMax
-	yMax = window.yMax
+	xMin = window.x_min
+	yMin = window.y_min
+	xMax = window.x_max
+	yMax = window.y_max
 
 	start_rc: int = getRegionCode(startPoint, xMin, yMin, xMax, yMax)
 	end_rc: int = getRegionCode(endPoint, xMin, yMin, xMax, yMax)
@@ -123,7 +123,7 @@ def applyLiangBarsky(start_point: Point2D , end_point: Point2D, window: Window) 
 	delta_y: int = end_point.y - start_point.y
 
 	p = [-delta_x, delta_x, -delta_y, delta_y]
-	q = [start_point.x - window.xMin, window.xMax - start_point.x, start_point.y - window.yMin, window.yMax - start_point.y]
+	q = [start_point.x - window.x_min, window.x_max - start_point.x, start_point.y - window.y_min, window.y_max - start_point.y]
 
 	inside = False
 

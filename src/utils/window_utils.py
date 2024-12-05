@@ -10,7 +10,8 @@ from core.window import Window
 from core.viewport import Viewport
 
 def viewportTransform(point: Point3D, window: Window, viewport: Viewport) -> Tuple:
-	xWmin, yWmin, xWmax, yWmax = (window.xMin, window.yMin, window.xMax, window.yMax)
+	"""Transform point world coordinates to viewport coordinates."""
+	xWmin, yWmin, xWmax, yWmax = (window.x_min, window.y_min, window.x_max, window.y_max)
 	xVmin, yVmin, xVmax, yVmax = (viewport.x, viewport.y, viewport.width + viewport.x, viewport.height + viewport.y)
 
 	xV = ((point.x - xWmin) / (xWmax - xWmin)) * (xVmax - xVmin)
@@ -22,6 +23,7 @@ def viewportTransform(point: Point3D, window: Window, viewport: Viewport) -> Tup
 	return (int(xV), int(yV))
 
 def getNormalPoint(point: Point3D, window: Window) -> Point2D:
+	"""Apply viewport projection to point"""
 	if(window.activeCamera.projectionType == CameraProjection.PARALLEL):
 		matrix = applyParallelProj(point, window)
 	else:

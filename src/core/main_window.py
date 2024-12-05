@@ -5,7 +5,10 @@ import numpy as np
 from math import radians as rad, tan
 from ast import literal_eval
 
-from PyQt5.QtWidgets import QLabel, QMessageBox, QVBoxLayout, QHBoxLayout, QWidget, QPushButton, QLineEdit, QListWidget, QFileDialog, QRadioButton, QButtonGroup
+from PyQt5.QtWidgets import (QLabel, QMessageBox, QVBoxLayout, QHBoxLayout, 
+                            QMainWindow, QPushButton, QLineEdit, QListWidget, QFileDialog, 
+                            QRadioButton, QButtonGroup, QAction, QWidget
+                            )
 
 from enumerators.projection_type import CameraProjection
 from enumerators.graphic_object_type import GraphicObjectType
@@ -30,7 +33,7 @@ from file_parser import loadFromJson, saveToJson, loadFromObj, saveToObj
 from model.base_object import GraphicObject
 from widgets.axis_selector import AxisWidget
 
-class MainWindow(QWidget):
+class MainWindow(QMainWindow):
   def __init__(self):
     super().__init__()
     
@@ -44,20 +47,25 @@ class MainWindow(QWidget):
     self.setupWorldWindow(0, 0, 1000, 1000, CameraProjection.PARALLEL)
 
     # Create main layout
-    self.layout: QHBoxLayout = self.setupAppWindowUI(1030, 720)
-    self.layout.addLayout(self.setupControllersUI(), 40)
+    main_layout: QHBoxLayout = self.setupAppWindowUI(1000, 900)
+    main_layout.addLayout(self.setupControllersUI(), 1)
+    
     right_layout = QVBoxLayout()
-    self.layout.addLayout(right_layout, 60)
-    right_layout.addLayout(self.setupViewport(600, 600, 0.8))
+    main_layout.addLayout(right_layout, 3)
+    right_layout.addLayout(self.setupViewport(800, 800, 0.8))
     right_layout.addWidget(QLabel("Console Output"))
     right_layout.addLayout(ConsoleWidget())
-
-    self.layout.setContentsMargins(20, 20, 20, 20)
 
     self.updateObjectList()
     self.zoomTextField.setText(str(self.zoom_value))
     self.panTextField.setText(str(self.pan_value))
     self.rotateTextField.setText(str(self.rotate_value))
+    
+    self.setupMenu()
+    
+    central_widget = QWidget()
+    central_widget.setLayout(main_layout)
+    self.setCentralWidget(central_widget)
 
   def setupWorldWindow(self, x, y, width, height, cameraProjection: CameraProjection):
     self.worldWindow = Window(x, y, width, height, Camera(projectionType=cameraProjection))
@@ -66,23 +74,38 @@ class MainWindow(QWidget):
 
   def setupAppWindowUI(self, width, height) -> QHBoxLayout:
     layout: QHBoxLayout = QHBoxLayout(self)
-    self.resize(width, height)
     self.setAutoFillBackground(True)
-    self.setStyleSheet("background-color: #303030;"
-                       "color: white"
-    )
-    self.setWindowTitle('Computer Graphics - T1')
+    self.setStyleSheet("background-color: #303030;" "color: white")
+    self.setWindowTitle('SGI')
 
     return layout
 
+  def setupMenu(self):
+    menu_bar = self.menuBar()
+
+    file_menu = menu_bar.addMenu("File")
+
+    save_action = QAction("Save", self)
+    open_action = QAction("Open", self)
+    exit_action = QAction("Exit", self)
+
+    save_action.triggered.connect(self.onSaveFile)
+    open_action.triggered.connect(self.onLoadFile)
+    exit_action.triggered.connect(self.close)
+
+    file_menu.addAction(save_action)
+    file_menu.addAction(open_action)
+    file_menu.addSeparator()
+    file_menu.addAction(exit_action)
+  
+  
   def setupControllersUI(self) -> QVBoxLayout:
     # Setup main controllers layout
     layout: QVBoxLayout = QVBoxLayout()
-    layout.setContentsMargins(0, 0, 30, 0)
+    # layout.setContentsMargins(0, 0, 30, 0)
     layout.addLayout(self.setupObjectsUI())
     layout.addLayout(self.setupCameraProjectionUI())
     layout.addLayout(self.setupLineClippingUI())
-    layout.addLayout(self.setupZoomUI())
     layout.addLayout(self.setupPanUI())
     layout.addLayout(self.setupRotateUI())
     return layout
@@ -91,20 +114,16 @@ class MainWindow(QWidget):
     # Create layout
     layout: QVBoxLayout = QVBoxLayout()
     layout.setContentsMargins(0, 0, 0, 15)
-    layout.addWidget(QLabel("Scene objects"))
+    layout.addWidget(QLabel("Object List"))
     
     # Create object list
     self.objectList = QListWidget()
 
     # Create buttons
     self.colorButton = ColorPickerWidget()
-    loadFileButton = QPushButton("Load File")
-    saveFileButton = QPushButton("Save File")
     transformButton = QPushButton("Transform Object")
     addObjectButton = QPushButton("Add Object")
     removeObjectButton = QPushButton("Remove Object")
-    loadFileButton.clicked.connect(self.onLoadFile)
-    saveFileButton.clicked.connect(self.onSaveFile)
     addObjectButton.clicked.connect(self.onAddObject)
     removeObjectButton.clicked.connect(self.onRemoveObject)
     transformButton.clicked.connect(self.showTranslationMenu)
@@ -131,8 +150,6 @@ class MainWindow(QWidget):
 
     # Add widgets to layout
     layout.addWidget(self.objectList)
-    layout.addWidget(loadFileButton)
-    layout.addWidget(saveFileButton)
     layout.addWidget(inputText)
     layout.addWidget(self.addObjectText)
     layout.addWidget(inputNameText)
@@ -207,58 +224,32 @@ class MainWindow(QWidget):
 
     return layout
 
-  def setupZoomUI(self) -> QVBoxLayout:
-    # Create layout
-    layout: QVBoxLayout = QVBoxLayout()
-    layout.setContentsMargins(0, 25, 0, 25)
-
-    # Create buttons
-    zoom_in_btn = QPushButton("Zoom in")
-    zoom_out_btn = QPushButton("Zoom out")
-    zoom_in_btn.clicked.connect(self.onZoomIn)
-    zoom_out_btn.clicked.connect(self.onZoomOut)
-
-    # Create labels
-    zoomText = QLabel()
-    zoomText.setText("Window Zoom: " )
-    zoomText.setAutoFillBackground(True)
-    zoomText.adjustSize()
-
-    # Create text field
-    self.zoomTextField = QLineEdit()
-    self.zoomTextField.adjustSize()
-    self.zoomTextField.textChanged[str].connect(self.onZoomInput)
-
-    # Add widgets to layout
-    layout.addWidget(zoomText)
-    layout.addWidget(self.zoomTextField)
-    layout.addWidget(zoom_in_btn)
-    layout.addWidget(zoom_out_btn)
-
-    return layout
-
   def setupPanUI(self) -> QVBoxLayout:
     # Create layout
     layout: QVBoxLayout = QVBoxLayout()
-    layout.setContentsMargins(0, 25, 0, 25)
 
     # Create labels
     panText = QLabel()
+    zoomText = QLabel()
     panText.setText("Window Pan: " )
-    panText.setAutoFillBackground(True)
-    panText.adjustSize()
+    zoomText.setText("Window Zoom: " )
     
     # Create text field
     self.panTextField = QLineEdit()
+    self.zoomTextField = QLineEdit()
     self.panTextField.adjustSize()
+    self.zoomTextField.adjustSize()
     self.panTextField.textChanged[str].connect(self.onPanInput)
+    self.zoomTextField.textChanged[str].connect(self.onZoomInput)
 
     # Create pan arrows
-    arrows = ArrowsWidget(lambda: self.onPan(0, 1), lambda: self.onPan(0, -1), lambda: self.onPan(-1, 0), lambda: self.onPan(1, 0))
+    arrows = ArrowsWidget(lambda: self.onPan(0, 1), lambda: self.onPan(0, -1), lambda: self.onPan(-1, 0), lambda: self.onPan(1, 0), self.onZoomIn, self.onZoomOut)
 
     # Add widgets to layout
     layout.addWidget(panText)
     layout.addWidget(self.panTextField)
+    layout.addWidget(zoomText)
+    layout.addWidget(self.zoomTextField)
     layout.addLayout(arrows.getLayout())
 
     return layout
@@ -373,7 +364,7 @@ class MainWindow(QWidget):
     if fileExtension == ".json":
       saveToJson(self.viewport.displayFile, path[0])
     elif fileExtension == ".obj":
-      saveToObj(self.viewport.displayFile, path[0], filename, [[self.worldWindow.xMin, self.worldWindow.yMin], [self.worldWindow.xMax, self.worldWindow.yMax]])
+      saveToObj(self.viewport.displayFile, path[0], filename, [[self.worldWindow.x_min, self.worldWindow.y_min], [self.worldWindow.x_max, self.worldWindow.y_max]])
 
   def onAddObject(self):
     self.checkNameInput()
