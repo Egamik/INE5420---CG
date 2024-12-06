@@ -17,18 +17,18 @@ def applyClipping(objectType: GraphicObjectType, points: List[Point3D], window: 
 	points = list(map(lambda p: Point2D(p.x, p.y), points))
 
 	# Point clipping
-	if GraphicObjectType.Point == objectType:
+	if objectType == GraphicObjectType.Point:
 		return applyPointClipping(points[0], window)
 
 	# Line clipping
-	elif GraphicObjectType.Line == objectType:
+	elif objectType == GraphicObjectType.Line:
 		if window.activeCamera.lineClippingType == ClippingLineAlgorithm.CohenSutherland:
 			return applyCohenSutherland(points[0], points[1], window)
 		elif window.activeCamera.lineClippingType == ClippingLineAlgorithm.LiangBarsky:
 			return applyLiangBarsky(points[0], points[1], window)
    
 	# Polygon clipping
-	elif GraphicObjectType.Polygon == objectType:
+	else:
 		clippingPolygon: List[Point2D] = [
 			Point2D(window.x_min, window.y_min), 
 			Point2D(window.x_min, window.y_max),

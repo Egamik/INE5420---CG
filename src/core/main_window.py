@@ -7,7 +7,8 @@ from ast import literal_eval
 
 from PyQt5.QtWidgets import (QLabel, QMessageBox, QVBoxLayout, QHBoxLayout, 
                             QMainWindow, QPushButton, QLineEdit, QListWidget, QFileDialog, 
-                            QRadioButton, QButtonGroup, QAction, QWidget, QDialog
+                            QRadioButton, QButtonGroup, QAction, QWidget, QDialog,
+                            QCheckBox
                             )
 from PyQt5.QtGui import QColor
 from enumerators.projection_type import CameraProjection
@@ -46,14 +47,17 @@ class MainWindow(QMainWindow):
 
     # Create main layout
     main_layout: QHBoxLayout = self.setupAppWindowUI(1000, 900)
-    main_layout.addLayout(self.setupControllersUI(), 1)
     
     right_layout = QVBoxLayout()
+    # Set up viewport and canva
     main_layout.addLayout(right_layout, 3)
     right_layout.addLayout(self.setupViewport(800, 800, 0.8))
+    
     right_layout.addWidget(QLabel("Console Output"))
     right_layout.addLayout(ConsoleWidget())
 
+    main_layout.addLayout(self.setupControllersUI(), 1)
+    
     self.updateObjectList()
     self.zoomTextField.setText(str(self.zoom_value))
     self.panTextField.setText(str(self.pan_value))
@@ -100,7 +104,7 @@ class MainWindow(QMainWindow):
   def setupControllersUI(self) -> QVBoxLayout:
     # Setup main controllers layout
     layout: QVBoxLayout = QVBoxLayout()
-    # layout.setContentsMargins(0, 0, 30, 0)
+
     layout.addLayout(self.setupObjectsUI())
     layout.addLayout(self.setupCameraProjectionUI())
     layout.addLayout(self.setupLineClippingUI())
@@ -144,20 +148,19 @@ class MainWindow(QMainWindow):
     proj_title.adjustSize()
 
     # Create Buttons
-    buttons = QButtonGroup()
+    button_layout = QHBoxLayout()
 
     parallelButton = QRadioButton("Parallel")
-    parallelButton.clicked.connect(lambda: (self.worldWindow.activeCamera.setProjectionType(CameraProjection.PARALLEL), self.onWindowChange()))
-    buttons.addButton(parallelButton)
+    parallelButton.toggled.connect(lambda: (self.worldWindow.activeCamera.setProjectionType(CameraProjection.PARALLEL), self.onWindowChange()))
+    button_layout.addWidget(parallelButton)
     
     perspectiveButton = QRadioButton("Perspective")
-    perspectiveButton.clicked.connect(lambda: (self.worldWindow.activeCamera.setProjectionType(CameraProjection.PERSPECTIVE), self.onWindowChange()))
-    buttons.addButton(perspectiveButton)
+    perspectiveButton.toggled.connect(lambda: (self.worldWindow.activeCamera.setProjectionType(CameraProjection.PERSPECTIVE), self.onWindowChange()))
+    button_layout.addWidget(perspectiveButton)
     
     # Add widgets to layout
     layout.addWidget(proj_title)
-    layout.addWidget(parallelButton)
-    layout.addWidget(perspectiveButton)
+    layout.addLayout(button_layout)
 
     if (self.worldWindow.activeCamera.projectionType == CameraProjection.PARALLEL):
       parallelButton.setChecked(True)
@@ -379,35 +382,13 @@ class MainWindow(QMainWindow):
     self.onWindowChange()
 
   def onZoomInput(self, value):
-    self.zoom_value = self.onNumberFieldInput(value)  
+    self.zoom_value = value
 
   def onPanInput(self, value):
-    self.pan_value = self.onNumberFieldInput(value)  
+    self.pan_value = value
   
   def onRotateInput(self, value):
-    self.rotate_value = self.onNumberFieldInput(value)  
-
-  def onNumberFieldInput(self, value) -> float:
-    try:
-      value = (float(value))
-      return value
-    except:
-      errorMessage = QMessageBox()
-      errorMessage.setText('Your input should be a number')
-      errorMessage.setWindowTitle('Wrong input format')
-      errorMessage.setStyleSheet("background-color: #303030;"
-                                  "color: white"
-      )
-      errorMessage.exec()     
-    
-  def raiseException(self, message: str, title: str):
-    errorMessage = QMessageBox()
-    errorMessage.setText(message)
-    errorMessage.setWindowTitle(title)
-    errorMessage.setStyleSheet("background-color: #303030;"
-                                "color: white"
-    )
-    errorMessage.exec()     
+    self.rotate_value = value  
   
   def showTranslationMenu(self):
     index = self.objectList.currentRow()

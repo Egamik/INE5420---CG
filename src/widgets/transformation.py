@@ -280,8 +280,9 @@ class TransformationWidget(QWidget):
         if(len(self.transformations) > 0):
             self.object.points = list(map(lambda x: Point3D(x.item(0), x.item(1), x.item(2)), normalPointMatrices))
             self.object.normalizedPoints = list(map(lambda point: getNormalPoint(point, self.window), self.object.points))
-            self.object.renderPoints = applyClipping(self.object.type, self.object.normalizedPoints, self.window)
-            self.repaint()
+        
+        self.object.renderPoints = applyClipping(self.object.type, self.object.normalizedPoints, self.window)
+        self.repaint()
         
         self.close()    
         

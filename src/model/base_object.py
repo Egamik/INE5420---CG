@@ -25,6 +25,7 @@ class GraphicObject:
 		positionSum:Point3D = Point3D()
 		for point in self.points:
 			positionSum = Point3D(positionSum.x + point.x, positionSum.y + point.y, positionSum.z + point.z)
+		# Save center of mass
 		self.transform.position = (positionSum.x / numPoints, positionSum.y / numPoints, positionSum.z / numPoints)
 
 	def getPoints(self) -> List[Point3D]:
