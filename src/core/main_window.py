@@ -5,10 +5,9 @@ import numpy as np
 from math import radians as rad, tan
 from ast import literal_eval
 
-from PyQt5.QtWidgets import (QLabel, QMessageBox, QVBoxLayout, QHBoxLayout, 
+from PyQt5.QtWidgets import (QLabel, QVBoxLayout, QHBoxLayout, 
                             QMainWindow, QPushButton, QLineEdit, QListWidget, QFileDialog, 
                             QRadioButton, QButtonGroup, QAction, QWidget, QDialog,
-                            QCheckBox
                             )
 from PyQt5.QtGui import QColor
 from enumerators.projection_type import CameraProjection
@@ -46,17 +45,26 @@ class MainWindow(QMainWindow):
     self.setupWorldWindow(0, 0, 1000, 1000, CameraProjection.PARALLEL)
 
     # Create main layout
-    main_layout: QHBoxLayout = self.setupAppWindowUI(1000, 900)
+    self.setStyleSheet("background-color: #303030;" "color: white")
+    self.setWindowTitle('SGI')
+    main_layout = QHBoxLayout()
+    self.resize(1000, 900)
     
     right_layout = QVBoxLayout()
+    left_layout = QVBoxLayout()
     # Set up viewport and canva
+    main_layout.addLayout(left_layout, 1)
     main_layout.addLayout(right_layout, 3)
     right_layout.addLayout(self.setupViewport(800, 800, 0.8))
     
     right_layout.addWidget(QLabel("Console Output"))
     right_layout.addLayout(ConsoleWidget())
 
-    main_layout.addLayout(self.setupControllersUI(), 1)
+    left_layout.addLayout(self.setupObjectsUI())
+    left_layout.addLayout(self.setupCameraProjectionUI())
+    left_layout.addLayout(self.setupLineClippingUI())
+    left_layout.addLayout(self.setupPanUI())
+    left_layout.addLayout(self.setupRotateUI())
     
     self.updateObjectList()
     self.zoomTextField.setText(str(self.zoom_value))
@@ -73,14 +81,6 @@ class MainWindow(QMainWindow):
     self.worldWindow = Window(x, y, width, height, Camera(projectionType=cameraProjection))
     cameraPosition = Point3D(self.worldWindow.transform.position.x, self.worldWindow.transform.position.y - (tan(rad(self.focal_angle)) * self.focal_distance), self.worldWindow.transform.position.z + self.focal_distance)
     self.worldWindow.activeCamera.transform.position = cameraPosition
-
-  def setupAppWindowUI(self, width, height) -> QHBoxLayout:
-    layout: QHBoxLayout = QHBoxLayout(self)
-    self.setAutoFillBackground(True)
-    self.setStyleSheet("background-color: #303030;" "color: white")
-    self.setWindowTitle('SGI')
-
-    return layout
 
   def setupMenu(self):
     menu_bar = self.menuBar()
@@ -99,18 +99,6 @@ class MainWindow(QMainWindow):
     file_menu.addAction(open_action)
     file_menu.addSeparator()
     file_menu.addAction(exit_action)
-  
-  
-  def setupControllersUI(self) -> QVBoxLayout:
-    # Setup main controllers layout
-    layout: QVBoxLayout = QVBoxLayout()
-
-    layout.addLayout(self.setupObjectsUI())
-    layout.addLayout(self.setupCameraProjectionUI())
-    layout.addLayout(self.setupLineClippingUI())
-    layout.addLayout(self.setupPanUI())
-    layout.addLayout(self.setupRotateUI())
-    return layout
 
   def setupObjectsUI(self) -> QVBoxLayout:
     # Create layout
@@ -151,6 +139,7 @@ class MainWindow(QMainWindow):
     button_layout = QHBoxLayout()
 
     parallelButton = QRadioButton("Parallel")
+    parallelButton.setChecked(True)
     parallelButton.toggled.connect(lambda: (self.worldWindow.activeCamera.setProjectionType(CameraProjection.PARALLEL), self.onWindowChange()))
     button_layout.addWidget(parallelButton)
     
@@ -228,17 +217,6 @@ class MainWindow(QMainWindow):
 
     return layout
 
-  def onAxisInput(self, value):
-    if(value == 'x'):
-      self.rotate_axis = Axis.X
-      print("Rotating window on axis: " + Axis.X.name)
-    if(value == 'y'):
-      self.rotate_axis = Axis.Y  
-      print("Rotating window on axis: " + Axis.Y.name)
-    if(value == 'z'):
-      self.rotate_axis = Axis.Z
-      print("Rotating window on axis: " + Axis.Z.name)
-
   def setupRotateUI(self) -> QVBoxLayout:
     # Create layout
     layout: QVBoxLayout = QVBoxLayout()
@@ -247,11 +225,23 @@ class MainWindow(QMainWindow):
     # Create labels
     rotateText = QLabel()
     rotateText.setText("Window Rotation: " )
-    rotateText.setAutoFillBackground(True)
-    rotateText.adjustSize()
     
     # Create axis radio buttons
-    axisRadio = AxisWidget(self.setRotateAxis)
+    rotateBtnLayout = QHBoxLayout()
+    self.axis_x_radio = QRadioButton("X")
+    self.axis_y_radio = QRadioButton("Y")
+    self.axis_z_radio = QRadioButton("Z")
+    
+    rotateBtnLayout.addWidget(self.axis_x_radio)
+    rotateBtnLayout.addWidget(self.axis_y_radio)
+    rotateBtnLayout.addWidget(self.axis_z_radio)
+    
+    self.axis_z_radio.setChecked(True)
+    axisGroup = QButtonGroup(self)
+    axisGroup.addButton(self.axis_x_radio)
+    axisGroup.addButton(self.axis_y_radio)
+    axisGroup.addButton(self.axis_z_radio)
+    axisGroup.buttonClicked.connect(self.setRotateAxis)
 
     # Create text field
     self.rotateTextField = QLineEdit()
@@ -264,7 +254,7 @@ class MainWindow(QMainWindow):
 
     # Add widgets to layout
     layout.addWidget(rotateText)
-    layout.addLayout(axisRadio)
+    layout.addLayout(rotateBtnLayout)
     layout.addWidget(self.rotateTextField)
     layout.addWidget(rotateButton)
 
@@ -382,13 +372,13 @@ class MainWindow(QMainWindow):
     self.onWindowChange()
 
   def onZoomInput(self, value):
-    self.zoom_value = value
+    self.zoom_value = float(value)
 
   def onPanInput(self, value):
-    self.pan_value = value
+    self.pan_value = float(value)
   
   def onRotateInput(self, value):
-    self.rotate_value = value  
+    self.rotate_value = float(value)  
   
   def showTranslationMenu(self):
     index = self.objectList.currentRow()
@@ -396,8 +386,13 @@ class MainWindow(QMainWindow):
     self.translation = TransformationWidget(self.viewport.displayFile[index], self.worldWindow, self.repaint)
     self.translation.show()
 
-  def setRotateAxis(self, axis: Axis):
-    self.rotate_axis = axis
+  def setRotateAxis(self, button):
+    if button == self.axis_x_radio:
+      self.rotate_axis = Axis.X
+    elif button == self.axis_y_radio:
+      self.rotate_axis = Axis.Y
+    elif button == self.axis_z_radio:
+      self.rotate_axis = Axis.Z
 
 def path_leaf(path):
     head, tail = ntpath.split(path)

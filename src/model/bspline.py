@@ -67,27 +67,27 @@ class BSpline(GraphicObject):
 
 			j = 1
       
-		while j < n:
-			j += 1
+			while j < n:
+				j += 1
 
-			x[0][0] += x[1][0]
-			x[1][0] += x[2][0]
-			x[2][0] += x[3][0]
+				x[0][0] += x[1][0]
+				x[1][0] += x[2][0]
+				x[2][0] += x[3][0]
 
-			y[0][0] += y[1][0]
-			y[1][0] += y[2][0]
-			y[2][0] += y[3][0]
+				y[0][0] += y[1][0]
+				y[1][0] += y[2][0]
+				y[2][0] += y[3][0]
 
-			visiblePoints = applyCohenSutherland(Point2D(oldX, oldY), Point2D(x[0].item(0), y[0].item(0)), window)
+				visiblePoints = applyCohenSutherland(Point2D(oldX, oldY), Point2D(x[0].item(0), y[0].item(0)), window)
 
-			# Outside of the window, should not be rendered
-			if (len(visiblePoints) <= 0):
-				continue
+				# Outside of the window, should not be rendered
+				if (len(visiblePoints) <= 0):
+					continue
 
-			x1, y1 = viewportTransform(visiblePoints[0], window, viewport)
-			x2, y2 = viewportTransform(visiblePoints[1], window, viewport)
+				x1, y1 = viewportTransform(visiblePoints[0], window, viewport)
+				x2, y2 = viewportTransform(visiblePoints[1], window, viewport)
         
-			painter.drawLine(x1, y1, x2, y2)
+				painter.drawLine(x1, y1, x2, y2)
 
-			oldX = x[0][0]
-			oldY = y[0][0]
+				oldX = x[0][0]
+				oldY = y[0][0]
